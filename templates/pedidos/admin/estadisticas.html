@@ -1,0 +1,142 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Estadísticas - Admin{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">Estadísticas del Sistema</h1>
+</div>
+
+<div class="row">
+    <div class="col-md-3">
+        <div class="stat-card stat-card-primary">
+            <div class="stat-icon">
+                <i class="bi bi-people"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-number">{{ total_usuarios }}</span>
+                <span class="stat-label">Total Usuarios</span>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-3">
+        <div class="stat-card stat-card-success">
+            <div class="stat-icon">
+                <i class="bi bi-person-check"></i>
+            </div>
+            <div class="stat-content">
+                <span class="stat-number">{{ total_clientes }}</span>
+                <span class="stat-label">Clientes</span>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="stats-grid mt-4">
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-primary">
+            <i class="bi bi-receipt"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ total_pedidos }}</span>
+            <span class="stat-label">Total Pedidos</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-warning">
+            <i class="bi bi-clock"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ pedidos_pendientes }}</span>
+            <span class="stat-label">Pendientes</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-info">
+            <i class="bi bi-check-circle"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ pedidos_recibidos }}</span>
+            <span class="stat-label">Recibidos</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-secondary">
+            <i class="bi bi-gear"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ pedidos_procesando }}</span>
+            <span class="stat-label">Procesando</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-dark">
+            <i class="bi bi-truck"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ pedidos_enviados }}</span>
+            <span class="stat-label">Enviados</span>
+        </div>
+    </div>
+    
+    <div class="stat-card">
+        <div class="stat-icon stat-icon-success">
+            <i class="bi bi-check-all"></i>
+        </div>
+        <div class="stat-content">
+            <span class="stat-number">{{ pedidos_entregados }}</span>
+            <span class="stat-label">Entregados</span>
+        </div>
+    </div>
+</div>
+
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title">Resumen de Estados</h5>
+    </div>
+    <div class="card-body">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>Estado</th>
+                    <th class="text-center">Cantidad</th>
+                    <th class="text-center">Porcentaje</th>
+                </tr>
+            </thead>
+            <tbody>
+                <tr>
+                    <td><span class="badge badge-pendiente">Pendiente</span></td>
+                    <td class="text-center">{{ pedidos_pendientes }}</td>
+                    <td class="text-center">{{ pedidos_pendientes|add:pedidos_recibidos|add:pedidos_procesando|add:pedidos_enviados|add:pedidos_entregados|default:1|percent:pedidos_pendientes }}%</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-recibido">Recibido</span></td>
+                    <td class="text-center">{{ pedidos_recibidos }}</td>
+                    <td class="text-center">{{ pedidos_recibidos|add:pedidos_procesando|add:pedidos_enviados|add:pedidos_entregados|default:1|percent:pedidos_recibidos }}%</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-procesando">Procesando</span></td>
+                    <td class="text-center">{{ pedidos_procesando }}</td>
+                    <td class="text-center">{{ pedidos_procesando|add:pedidos_enviados|add:pedidos_entregados|default:1|percent:pedidos_procesando }}%</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-enviado">Enviado</span></td>
+                    <td class="text-center">{{ pedidos_enviados }}</td>
+                    <td class="text-center">{{ pedidos_enviados|add:pedidos_entregados|default:1|percent:pedidos_enviados }}%</td>
+                </tr>
+                <tr>
+                    <td><span class="badge badge-entregado">Entregado</span></td>
+                    <td class="text-center">{{ pedidos_entregados }}</td>
+                    <td class="text-center">{% widthratio pedidos_entregados total_pedidos 100 %}%</td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

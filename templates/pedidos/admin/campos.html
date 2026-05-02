@@ -1,0 +1,465 @@
+{% extends 'base.html' %}
+
+{% block title %}Configurar Campos - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+    .admin-page {
+        max-width: 1200px;
+        margin: 0 auto;
+    }
+    
+    .admin-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 30px;
+        padding-bottom: 20px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .admin-header h1 {
+        margin: 0;
+        font-size: 24px;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .btn-nuevo {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 20px;
+        background: #4f46e5;
+        color: white;
+        border: none;
+        border-radius: 8px;
+        font-weight: 500;
+        text-decoration: none;
+        transition: background 0.2s;
+    }
+    
+    .btn-nuevo:hover {
+        background: #4338ca;
+        color: white;
+    }
+    
+    .categoria-seccion {
+        margin-bottom: 30px;
+    }
+    
+    .categoria-titulo {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        margin-bottom: 15px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+    }
+    
+    .categoria-titulo h2 {
+        margin: 0;
+        font-size: 18px;
+        font-weight: 600;
+        color: #374151;
+    }
+    
+    .badge-categoria {
+        padding: 4px 10px;
+        background: #e5e7eb;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    .campo-card {
+        background: white;
+        border: 1px solid #e5e7eb;
+        border-radius: 12px;
+        margin-bottom: 15px;
+        overflow: hidden;
+    }
+    
+    .campo-card-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding: 15px 20px;
+        background: #f9fafb;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .campo-info {
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .campo-nombre {
+        font-size: 16px;
+        font-weight: 600;
+        color: #111827;
+    }
+    
+    .campo-badges {
+        display: flex;
+        gap: 8px;
+    }
+    
+    .badge-tipo {
+        padding: 4px 10px;
+        background: #dbeafe;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #1d4ed8;
+    }
+    
+    .badge-requerido {
+        padding: 4px 10px;
+        background: #fef2f2;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #dc2626;
+    }
+    
+    .badge-inactivo {
+        padding: 4px 10px;
+        background: #f3f4f6;
+        border-radius: 4px;
+        font-size: 12px;
+        font-weight: 500;
+        color: #6b7280;
+    }
+    
+    .campo-acciones {
+        display: flex;
+        gap: 10px;
+    }
+    
+    .btn-accion {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 36px;
+        height: 36px;
+        border-radius: 8px;
+        text-decoration: none;
+        transition: all 0.2s;
+    }
+    
+    .btn-editar {
+        background: #4f46e5;
+        color: white;
+    }
+    
+    .btn-editar:hover {
+        background: #4338ca;
+        color: white;
+    }
+    
+    .btn-eliminar {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    
+    .btn-eliminar:hover {
+        background: #fecaca;
+    }
+    
+    .campo-card-body {
+        padding: 15px 20px;
+    }
+    
+    .campo-detalle {
+        display: flex;
+        gap: 30px;
+        flex-wrap: wrap;
+    }
+    
+    .detalle-item {
+        display: flex;
+        flex-direction: column;
+        gap: 5px;
+    }
+    
+    .detalle-label {
+        font-size: 12px;
+        color: #6b7280;
+    }
+    
+    .detalle-valor {
+        font-size: 14px;
+        color: #111827;
+    }
+    
+    .opciones-list {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+    
+    .opcion-tag {
+        padding: 4px 12px;
+        background: #f3f4f6;
+        border-radius: 20px;
+        font-size: 13px;
+        color: #374151;
+    }
+    
+    .dependencia-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 15px;
+        background: #fef3c7;
+        border-radius: 8px;
+        margin-top: 10px;
+    }
+    
+    .dependencia-info span {
+        font-size: 13px;
+        color: #92400e;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 60px 20px;
+        background: white;
+        border-radius: 12px;
+        border: 2px dashed #e5e7eb;
+    }
+    
+    .empty-state-icon {
+        font-size: 48px;
+        margin-bottom: 15px;
+    }
+    
+    .empty-state h3 {
+        margin: 0 0 10px;
+        font-size: 18px;
+        color: #374151;
+    }
+    
+    .empty-state p {
+        margin: 0 0 20px;
+        color: #6b7280;
+    }
+    
+    .empty-state .btn-nuevo {
+        display: inline-flex;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link">
+            <span>📋</span> Pedidos
+        </a>
+        
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link active">
+            <span>⚙️</span> Campos
+        </a>
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="admin-page">
+        <div class="admin-header">
+            <div>
+                <h1>⚙️ Configurar Campos</h1>
+                <p style="margin: 5px 0 0 0; color: #6b7280;">Administra los campos del formulario de pedidos</p>
+            </div>
+            <a href="{% url 'admin_campo_create' %}" class="btn-nuevo">
+                <span>+</span> Nuevo Campo
+            </a>
+        </div>
+        
+        <!-- Campos Tipo Lente -->
+        <div class="categoria-seccion">
+            <div class="categoria-titulo">
+                <span class="badge-categoria">LENTE</span>
+                <h2>Tipo de Lente</h2>
+            </div>
+            
+            {% for campo in campos_lente %}
+            <div class="campo-card">
+                <div class="campo-card-header">
+                    <div class="campo-info">
+                        <span class="campo-nombre">{{ campo.nombre }}</span>
+                        <div class="campo-badges">
+                            <span class="badge-tipo">{{ campo.get_tipo_display }}</span>
+                            {% if campo.requerido %}
+                            <span class="badge-requerido">Requerido</span>
+                            {% endif %}
+                            {% if not campo.activo %}
+                            <span class="badge-inactivo">Inactivo</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="campo-acciones">
+                        <a href="{% url 'admin_campo_edit' campo.pk %}" class="btn-accion btn-editar" title="Editar">
+                            ✏️
+                        </a>
+                    </div>
+                </div>
+                <div class="campo-card-body">
+                    <div class="campo-detalle">
+                        {% if campo.opciones %}
+                        <div class="detalle-item">
+                            <span class="detalle-label">Opciones disponibles</span>
+                            <div class="opciones-list">
+                                {% for opcion in campo.opciones %}
+                                <span class="opcion-tag">{{ opcion }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                        
+                        {% if campo.depende_de %}
+                        <div class="detalle-item">
+                            <span class="detalle-label">Dependencia</span>
+                            <div class="dependencia-info">
+                                <span>🔗 Depende de: <strong>{{ campo.depende_de.nombre }}</strong></span>
+                                {% if campo.valores_que_muestran %}
+                                <span>• Mostrar cuando: {{ campo.valores_que_muestran|join:", " }}</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <div class="empty-state-icon">🔘</div>
+                <h3>No hay campos de lente</h3>
+                <p>Crea el primer campo paraTipo de Lente</p>
+                <a href="{% url 'admin_campo_create' %}" class="btn-nuevo">Crear Campo</a>
+            </div>
+            {% endfor %}
+        </div>
+        
+        <!-- Campos Características -->
+        <div class="categoria-seccion">
+            <div class="categoria-titulo">
+                <span class="badge-categoria">CARACTERISTICAS</span>
+                <h2>Características</h2>
+            </div>
+            
+            {% for campo in campos_caracteristicas %}
+            <div class="campo-card">
+                <div class="campo-card-header">
+                    <div class="campo-info">
+                        <span class="campo-nombre">{{ campo.nombre }}</span>
+                        <div class="campo-badges">
+                            <span class="badge-tipo">{{ campo.get_tipo_display }}</span>
+                            {% if campo.requerido %}
+                            <span class="badge-requerido">Requerido</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="campo-acciones">
+                        <a href="{% url 'admin_campo_edit' campo.pk %}" class="btn-accion btn-editar" title="Editar">
+                            ✏️
+                        </a>
+                    </div>
+                </div>
+                <div class="campo-card-body">
+                    <div class="campo-detalle">
+                        {% if campo.opciones %}
+                        <div class="detalle-item">
+                            <span class="detalle-label">Opciones disponibles</span>
+                            <div class="opciones-list">
+                                {% for opcion in campo.opciones %}
+                                <span class="opcion-tag">{{ opcion }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: #9ca3af; padding: 20px;">No hay campos de características</p>
+            {% endfor %}
+        </div>
+        
+        <!-- Campos Montaje -->
+        <div class="categoria-seccion">
+            <div class="categoria-titulo">
+                <span class="badge-categoria">MONTAJE</span>
+                <h2>Montaje</h2>
+            </div>
+            
+            {% for campo in campos_montaje %}
+            <div class="campo-card">
+                <div class="campo-card-header">
+                    <div class="campo-info">
+                        <span class="campo-nombre">{{ campo.nombre }}</span>
+                        <div class="campo-badges">
+                            <span class="badge-tipo">{{ campo.get_tipo_display }}</span>
+                            {% if campo.requerido %}
+                            <span class="badge-requerido">Requerido</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="campo-acciones">
+                        <a href="{% url 'admin_campo_edit' campo.pk %}" class="btn-accion btn-editar" title="Editar">
+                            ✏️
+                        </a>
+                    </div>
+                </div>
+                <div class="campo-card-body">
+                    <div class="campo-detalle">
+                        {% if campo.opciones %}
+                        <div class="detalle-item">
+                            <span class="detalle-label">Opciones disponibles</span>
+                            <div class="opciones-list">
+                                {% for opcion in campo.opciones %}
+                                <span class="opcion-tag">{{ opcion }}</span>
+                                {% endfor %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <p style="color: #9ca3af; padding: 20px;">No hay campos de montaje</p>
+            {% endfor %}
+        </div>
+    </div>
+</main>
+{% endblock %}

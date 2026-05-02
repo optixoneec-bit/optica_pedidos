@@ -1,0 +1,328 @@
+"""
+Pedidos App - Formularios
+"""
+from django import forms
+from django.contrib.auth.forms import UserCreationForm
+from .models import (
+    Usuario, Pedido, Campo, PedidoValor,
+    TipoCampo, EstadoPedido, EstadoMontura, TipoBisel
+)
+
+
+class LoginForm(forms.Form):
+    """Formulario de inicio de sesión."""
+    username = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Usuario'
+        })
+    )
+    password = forms.CharField(
+        widget=forms.PasswordInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'Contraseña'
+        })
+    )
+
+
+class UsuarioForm(UserCreationForm):
+    """Formulario para crear/editar usuarios."""
+    rol = forms.ChoiceField(
+        choices=Usuario._meta.get_field('rol').choices,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Rol'
+    )
+    
+    nombre_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Nombre de Óptica'
+    )
+    ciudad_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Ciudad'
+    )
+    ruc_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='RUC'
+    )
+    vendedor_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Vendedor'
+    )
+    telefono_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Teléfono'
+    )
+    
+    class Meta:
+        model = Usuario
+        fields = [
+            'username', 'email', 'password1', 'password2',
+            'first_name', 'last_name', 'rol',
+            'nombre_optica', 'ciudad_optica', 'ruc_optica',
+            'vendedor_optica', 'telefono_optica'
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+
+
+class PerfilForm(forms.ModelForm):
+    """Formulario para editar perfil propio."""
+    class Meta:
+        model = Usuario
+        fields = [
+            'first_name', 'last_name', 'email',
+            'nombre_optica', 'ciudad_optica', 'ruc_optica',
+            'vendedor_optica', 'telefono_optica', 'logo'
+        ]
+        widgets = {
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'nombre_optica': forms.TextInput(attrs={'class': 'form-control'}),
+            'ciudad_optica': forms.TextInput(attrs={'class': 'form-control'}),
+            'ruc_optica': forms.TextInput(attrs={'class': 'form-control'}),
+            'vendedor_optica': forms.TextInput(attrs={'class': 'form-control'}),
+            'telefono_optica': forms.TextInput(attrs={'class': 'form-control'}),
+            'logo': forms.FileInput(attrs={'class': 'form-control'}),
+        }
+
+
+class PedidoForm(forms.ModelForm):
+    """Formulario para crear/editar pedidos."""
+    
+    # Tipo de lente
+    tipo_lente = forms.ChoiceField(
+        choices=Pedido._meta.get_field('tipo_lente').choices,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False,
+        label='Tipo de Lente'
+    )
+    diseno_lente = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Diseño'
+    )
+    
+    # Ojo Derecho
+    od_esfera = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD Esfera'}),
+        required=False, label='OD Esfera'
+    )
+    od_cilindro = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD Cilindro'}),
+        required=False, label='OD Cilindro'
+    )
+    od_eje = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD Eje'}),
+        required=False, label='OD Eje'
+    )
+    od_dnp = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD DNP'}),
+        required=False, label='OD DNP'
+    )
+    od_altura = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD Altura'}),
+        required=False, label='OD Altura'
+    )
+    od_adicion = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OD Adición'}),
+        required=False, label='OD Adición'
+    )
+    
+    # Ojo Izquierdo
+    oi_esfera = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI Esfera'}),
+        required=False, label='OI Esfera'
+    )
+    oi_cilindro = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI Cilindro'}),
+        required=False, label='OI Cilindro'
+    )
+    oi_eje = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI Eje'}),
+        required=False, label='OI Eje'
+    )
+    oi_dnp = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI DNP'}),
+        required=False, label='OI DNP'
+    )
+    oi_altura = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI Altura'}),
+        required=False, label='OI Altura'
+    )
+    oi_adicion = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'OI Adición'}),
+        required=False, label='OI Adición'
+    )
+    
+    # Extras
+    horizontal = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Horizontal'}),
+        required=False, label='Horizontal'
+    )
+    vertical = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Vertical'}),
+        required=False, label='Vertical'
+    )
+    puente = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Puente'}),
+        required=False, label='Puente'
+    )
+    distancia_mecanica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': 'Distancia Mecánica'}),
+        required=False, label='Distancia Mecánica'
+    )
+    
+    # Montura
+    montura_descripcion = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False, label='Descripción Montura'
+    )
+    montura_estado = forms.ChoiceField(
+        choices=EstadoMontura.choices,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False, label='Estado Montura'
+    )
+    montura_foto = forms.ImageField(
+        widget=forms.FileInput(attrs={'class': 'form-control'}),
+        required=False, label='Foto Montura'
+    )
+    
+    # Bisel
+    tipo_bisel = forms.ChoiceField(
+        choices=TipoBisel.choices,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        required=False, label='Tipo de Bisel'
+    )
+    
+    # Observaciones
+    observaciones = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 3,
+            'placeholder': 'Observaciones adicionales...'
+        }),
+        required=False, label='Observaciones'
+    )
+    
+    class Meta:
+        model = Pedido
+        fields = [
+            'tipo_lente', 'diseno_lente',
+            'od_esfera', 'od_cilindro', 'od_eje', 'od_dnp', 'od_altura', 'od_adicion',
+            'oi_esfera', 'oi_cilindro', 'oi_eje', 'oi_dnp', 'oi_altura', 'oi_adicion',
+            'horizontal', 'vertical', 'puente', 'distancia_mecanica',
+            'montura_descripcion', 'montura_estado', 'montura_foto',
+            'tipo_bisel', 'observaciones'
+        ]
+
+
+class CampoForm(forms.ModelForm):
+    """Formulario para configurar campos dinámicos."""
+    tipo = forms.ChoiceField(
+        choices=TipoCampo.choices,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    categoria = forms.ChoiceField(
+        choices=Campo._meta.get_field('categoria').choices,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    requerido = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        required=False
+    )
+    opciones_raw = forms.CharField(
+        widget=forms.Textarea(attrs={
+            'class': 'form-control',
+            'rows': 2,
+            'placeholder': 'Una opción por línea'
+        }),
+        required=False,
+        label='Opciones (una por línea)'
+    )
+    valores_temp = forms.CharField(
+        widget=forms.TextInput(attrs={
+            'class': 'form-control',
+            'placeholder': 'valor1, valor2'
+        }),
+        required=False,
+        label='Mostrar cuando el valor sea',
+        help_text='Valores separados por coma'
+    )
+    
+    class Meta:
+        model = Campo
+        fields = [
+            'nombre', 'clave', 'tipo', 'categoria',
+            'requerido', 'orden', 'activo',
+            'depende_de', 'opciones_raw'
+        ]
+        widgets = {
+            'nombre': forms.TextInput(attrs={'class': 'form-control'}),
+            'clave': forms.TextInput(attrs={'class': 'form-control'}),
+            'orden': forms.NumberInput(attrs={'class': 'form-control'}),
+            'depende_de': forms.Select(attrs={'class': 'form-select'}),
+            'opciones_raw': forms.Textarea(attrs={'class': 'form-control', 'rows': 5}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        # Inicializar valores_temp con los valores actuales
+        if self.instance and self.instance.valores_que_muestran:
+            self.initial['valores_temp'] = ', '.join(self.instance.valores_que_muestran)
+    
+    def clean_opciones_raw(self):
+        """Convierte las opciones de texto a lista."""
+        opciones_raw = self.cleaned_data.get('opciones_raw', '')
+        if opciones_raw:
+            return [opt.strip() for opt in opciones_raw.split('\n') if opt.strip()]
+        return []
+    
+    def clean_valores_temp(self):
+        """Convierte valores de texto a lista."""
+        valores = self.cleaned_data.get('valores_temp', '')
+        if valores:
+            return [v.strip() for v in valores.split(',') if v.strip()]
+        return []
+    
+    def save(self, commit=True):
+        instance = super().save(commit=False)
+        
+        # Guardar opciones
+        opciones_raw = self.cleaned_data.get('opciones_raw', [])
+        if opciones_raw:
+            instance.opciones = opciones_raw
+        
+        # Guardar valores de dependencia
+        valores_temp = self.cleaned_data.get('valores_temp', [])
+        if valores_temp:
+            instance.valores_que_muestran = valores_temp
+        else:
+            instance.valores_que_muestran = []
+        
+        if commit:
+            instance.save()
+        return instance
+
+
+class CambioEstadoForm(forms.Form):
+    """Formulario para cambiar el estado de un pedido."""
+    nuevo_estado = forms.ChoiceField(
+        choices=EstadoPedido.choices,
+        widget=forms.Select(attrs={'class': 'form-select'})
+    )
+    observaciones = forms.CharField(
+        widget=forms.Textarea(attrs={'class': 'form-control', 'rows': 2}),
+        required=False,
+        label='Observaciones del cambio'
+    )

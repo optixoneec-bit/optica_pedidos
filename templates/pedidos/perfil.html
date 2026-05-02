@@ -1,0 +1,112 @@
+{% extends 'base.html' %}
+
+{% block title %}Mi Perfil - Óptica Pedidos{% endblock %}
+
+{% block extra_css %}
+<style>
+.page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+.page-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: var(--dark-color);
+    margin: 0;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <div class="sidebar-header">
+        <a href="{% url 'dashboard' %}" class="sidebar-brand">
+            <span>👁️</span> Óptica Pedidos
+        </a>
+    </div>
+    
+    <div class="sidebar-menu">
+        <h6>Principal</h6>
+        <a href="{% url 'dashboard' %}" class="sidebar-link">
+            <i>📊</i> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="sidebar-link">
+            <i>📋</i> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <h6>Administración</h6>
+        <a href="{% url 'admin_usuarios' %}" class="sidebar-link">
+            <i>👥</i> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="sidebar-link">
+            <i>⚙️</i> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="sidebar-link">
+            <i>📈</i> Estadísticas
+        </a>
+        {% endif %}
+        
+        <h6>Cuenta</h6>
+        <a href="{% url 'perfil' %}" class="sidebar-link active">
+            <i>👤</i> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="sidebar-user">
+            <span style="font-size: 1.5rem;">👤</span>
+            <div class="sidebar-user-info">
+                <div class="sidebar-user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+                <div class="sidebar-user-role">{{ usuario.get_rol_display }}</div>
+            </div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn btn-logout">
+            <i>🚪</i> Cerrar Sesión
+        </a>
+    </div>
+</nav>
+
+<!-- Main Content -->
+<main class="main-content">
+    <div class="top-navbar">
+        <h1>Mi Perfil</h1>
+    </div>
+    
+    <div class="content-wrapper">
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">👤 Datos del Usuario</h5>
+            </div>
+            <div class="card-body">
+                <form method="POST" enctype="multipart/form-data">
+                    {% csrf_token %}
+                    
+                    <div class="row">
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Nombre de Usuario</label>
+                                <input type="text" class="form-control" value="{{ usuario.username }}" readonly>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="mb-3">
+                                <label class="form-label">Email</label>
+                                <input type="email" class="form-control" value="{{ usuario.email|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <button type="submit" class="btn btn-primary">
+                        Guardar Cambios
+                    </button>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,993 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if pedido %}{{ pedido.id }}{% else %}Nuevo{% endif %} Pedido - Óptica{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-page { max-width: 1100px; margin: 0 auto; padding: 25px 30px; }
+    
+    /* Header */
+    .page-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 25px;
+    }
+    .page-title {
+        font-size: 28px;
+        font-weight: 700;
+        color: #1f2937;
+    }
+    .page-subtitle {
+        font-size: 14px;
+        color: #6b7280;
+        margin-top: 4px;
+    }
+    
+    /* Cards profesionales */
+    .form-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.08), 0 1px 2px rgba(0,0,0,0.06);
+        border: 1px solid #e5e7eb;
+        margin-bottom: 24px;
+        overflow: hidden;
+    }
+    .form-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 24px;
+        background: linear-gradient(to right, #f9fafb, #fafafa);
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .form-card-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .header-icon {
+        width: 36px;
+        height: 36px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 18px;
+    }
+    .icon-optica { background: #e0e7ff; color: #4f46e5; }
+    .icon-lente { background: #dbeafe; color: #3b82f6; }
+    .icon-material { background: #dcfce7; color: #10b981; }
+    .icon-tratamiento { background: #fef3c7; color: #f59e0b; }
+    .icon-receta { background: #fce7f3; color: #ec4899; }
+    .icon-montura { background: #e0e7ff; color: #8b5cf6; }
+    .icon-bisel { background: #ccfbf1; color: #14b8a6; }
+    .icon-obs { background: #f3f4f6; color: #6b7280; }
+    
+    .form-card-body { padding: 24px; }
+    
+    /* Grid layouts */
+    .grid-5 { display: grid; grid-template-columns: repeat(5, 1fr); gap: 16px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 16px; }
+    .grid-2 { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; }
+    
+    @media (max-width: 900px) { .grid-5 { grid-template-columns: repeat(3, 1fr); } }
+    @media (max-width: 600px) { .grid-5 { grid-template-columns: 1fr; } }
+    @media (max-width: 768px) { .grid-4 { grid-template-columns: repeat(2, 1fr); } }
+    @media (max-width: 480px) { .grid-4 { grid-template-columns: 1fr; } }
+    .grid-3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
+    .grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 20px; }
+    .grid-6 { display: grid; grid-template-columns: repeat(6, 1fr); gap: 16px; }
+    
+    @media (max-width: 768px) {
+        .grid-2, .grid-3, .grid-4, .grid-6 { grid-template-columns: 1fr; }
+    }
+    
+    /* Labels profesionales */
+    .form-label {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-weight: 500;
+        font-size: 13px;
+        color: #4b5563;
+        margin-bottom: 8px;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .label-badge {
+        font-size: 10px;
+        padding: 2px 6px;
+        border-radius: 4px;
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+    
+    /* Inputs profesionales */
+    .form-control {
+        width: 100%;
+        height: 48px;
+        padding: 10px 14px;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        background: #fafafa;
+    }
+    .form-control:focus {
+        outline: none;
+        border-color: #4f46e5;
+        background: white;
+        box-shadow: 0 0 0 4px rgba(79, 70, 229, 0.1);
+    }
+    .form-control[readonly] {
+        background: #f3f4f6;
+        color: #6b7280;
+        cursor: not-allowed;
+        border-color: #e5e7eb;
+    }
+    .form-control::placeholder {
+        color: #9ca3af;
+    }
+    
+    /* Estados de validación */
+    .input-valid {
+        border-color: #10b981 !important;
+        background: #ecfdf5 !important;
+    }
+    .input-warning {
+        border-color: #f59e0b !important;
+        background: #fffbeb !important;
+    }
+    .input-error {
+        border-color: #ef4444 !important;
+        background: #fef2f2 !important;
+    }
+    
+    /* Indicator de signo */
+    .sign-indicator {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        font-size: 12px;
+        font-weight: 700;
+    }
+    .sign-positive {
+        background: #dcfce7;
+        color: #059669;
+    }
+    .sign-negative {
+        background: #fee2e2;
+        color: #dc2626;
+    }
+    .sign-neutral {
+        background: #f3f4f6;
+        color: #9ca3af;
+    }
+    .sign-warning {
+        background: #fef3c7;
+        color: #d97706;
+    }
+    
+    /* Grupo de input con indicador */
+    .input-group {
+        position: relative;
+    }
+    .input-with-sign {
+        padding-left: 36px;
+    }
+    .input-addon {
+        position: absolute;
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 24px;
+        height: 24px;
+        border-radius: 6px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 12px;
+        font-weight: 700;
+        z-index: 1;
+        pointer-events: none;
+        transition: all 0.2s;
+    }
+    
+    /* Sección de receta */
+    .receta-section {
+        margin-bottom: 24px;
+    }
+    .receta-section:last-child { margin-bottom: 0; }
+    .receta-title {
+        font-size: 15px;
+        font-weight: 600;
+        color: #374151;
+        margin-bottom: 16px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #e5e7eb;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+    }
+    .receta-badge {
+        font-size: 11px;
+        padding: 3px 8px;
+        border-radius: 6px;
+        font-weight: 600;
+    }
+    .badge-od { background: #dbeafe; color: #2563eb; }
+    .badge-oi { background: #fce7f3; color: #db2777; }
+    .badge-extras { background: #e0e7ff; color: #4f46e5; }
+    
+    /* Extras grid */
+    .extras-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 16px;
+        padding: 20px;
+        background: #f9fafb;
+        border-radius: 12px;
+        border: 1px solid #e5e7eb;
+    }
+    
+    /* Tooltip */
+    .form-tooltip {
+        position: relative;
+        cursor: help;
+    }
+    .form-tooltip::after {
+        content: attr(data-tooltip);
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        padding: 6px 10px;
+        background: #1f2937;
+        color: white;
+        font-size: 12px;
+        border-radius: 6px;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s;
+        z-index: 10;
+    }
+    .form-tooltip:hover::after {
+        opacity: 1;
+        visibility: visible;
+    }
+    
+    /* Select styling */
+    select.form-control {
+        appearance: none;
+        background-image: url("data:image/svg+xml,%3csvg xmlns='http://www.w3.org/2000/svg' fill='none' viewBox='0 0 20 20'%3e%3cpath stroke='%236b7280' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M6 8l4 4 4-4'/%3e%3c/svg%3e");
+        background-position: right 12px center;
+        background-repeat: no-repeat;
+        background-size: 20px;
+        padding-right: 40px;
+    }
+    
+    /* Botón submit */
+    .btn-submit {
+        width: 100%;
+        height: 56px;
+        background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%);
+        color: white;
+        font-size: 16px;
+        font-weight: 600;
+        border: none;
+        border-radius: 12px;
+        cursor: pointer;
+        transition: all 0.2s;
+        margin-top: 10px;
+    }
+    .btn-submit:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 10px 25px rgba(79, 70, 229, 0.3);
+    }
+    
+    /* Alerta de ayuda */
+    .help-text {
+        font-size: 12px;
+        color: #9ca3af;
+        margin-top: 6px;
+    }
+    
+    /* Datos de Óptica como texto */
+    .datos-optica-grid {
+        display: grid;
+        grid-template-columns: repeat(4, 1fr);
+        gap: 20px;
+    }
+    .dato-item {
+        display: flex;
+        flex-direction: column;
+        gap: 4px;
+    }
+    .dato-label {
+        font-size: 12px;
+        font-weight: 500;
+        color: #9ca3af;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+    .dato-value {
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    
+    @media (max-width: 768px) {
+        .datos-optica-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    @media (max-width: 480px) {
+        .datos-optica-grid { grid-template-columns: 1fr; }
+    }
+    
+    /* Radio options estilo card */
+    .radio-options {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 12px;
+    }
+    .radio-card {
+        cursor: pointer;
+    }
+    .radio-card input {
+        display: none;
+    }
+    .radio-card-content {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 14px 24px;
+        background: #f9fafb;
+        border: 2px solid #e5e7eb;
+        border-radius: 10px;
+        font-size: 14px;
+        font-weight: 500;
+        color: #4b5563;
+        transition: all 0.2s;
+    }
+    .radio-card input:checked + .radio-card-content {
+        background: #e0e7ff;
+        border-color: #4f46e5;
+        color: #4f46e5;
+    }
+    .radio-card:hover .radio-card-content {
+        border-color: #4f46e5;
+        background: #f5f3ff;
+    }
+    
+    /* Tratamientos grid */
+    .tratamientos-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 24px;
+    }
+    .tratamiento-group {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+    }
+    @media (max-width: 768px) {
+        .tratamientos-grid { grid-template-columns: 1fr; }
+    }
+    
+    /* Burbuja error rojo */
+    .error-bubble {
+        display: none;
+        position: fixed;
+        top: 20px;
+        left: 50%;
+        transform: translateX(-50%);
+        z-index: 1000;
+        padding: 10px 20px;
+        background: #fef2f2;
+        border: 1px solid #fecaca;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #dc2626;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .error-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px 6px 0;
+        border-style: solid;
+        border-color: #fecaca transparent transparent transparent;
+    }
+    
+    /* Burbuja signos opuestos */
+    .sign-bubble {
+        display: none;
+        position: absolute;
+        z-index: 100;
+        padding: 8px 14px;
+        background: #fef3c7;
+        border: 1px solid #fcd34d;
+        border-radius: 8px;
+        font-size: 12px;
+        font-weight: 600;
+        color: #92400e;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        white-space: nowrap;
+    }
+    .sign-bubble::after {
+        content: '';
+        position: absolute;
+        bottom: -6px;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px 6px 0;
+        border-style: solid;
+        border-color: #fcd34d transparent transparent transparent;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand"><span>👁️</span> Óptica Pedidos</a>
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link"><span>📊</span> Dashboard</a>
+        <a href="{% url 'pedido_list' %}" class="menu-link"><span>📋</span> Pedidos</a>
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link"><span>👤</span> Perfil</a>
+    </div>
+    <div class="sidebar-footer">
+        <a href="{% url 'logout' %}">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="form-page">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">{% if pedido %}Editar{% else %}Nuevo{% endif %} Pedido</h1>
+                <p class="page-subtitle">Ingrese los datos del lente y la receta</p>
+            </div>
+        </div>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Datos de la Óptica (solo lectura - se carga del perfil del cliente) -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-optica">🏪</div>
+                    <h5>Datos de la Óptica</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="datos-optica-grid">
+                        <div class="dato-item">
+                            <span class="dato-label">Nombre</span>
+                            <span class="dato-value">{{ datos_optica.nombre|default:pedido.nombre_optica|default:'' }}</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Ciudad</span>
+                            <span class="dato-value">{{ datos_optica.ciudad|default:pedido.ciudad_optica|default:'' }}</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">RUC</span>
+                            <span class="dato-value">{{ datos_optica.ruc|default:pedido.ruc_optica|default:'' }}</span>
+                        </div>
+                        <div class="dato-item">
+                            <span class="dato-label">Teléfono</span>
+                            <span class="dato-value">{{ datos_optica.telefono|default:pedido.telefono_optica|default:'' }}</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tipo de Lente -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-lente">🔘</div>
+                    <h5>Tipo de Lente</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Lente</label>
+                            <select name="tipo_lente" class="form-control" onchange="cargarDiseno()">
+                                <option value="">Seleccionar...</option>
+                                <option value="MONOFOCAL" {% if pedido.tipo_lente == 'MONOFOCAL' %}selected{% endif %}>Monofocales</option>
+                                <option value="PROGRESIVO" {% if pedido.tipo_lente == 'PROGRESIVO' %}selected{% endif %}>Progresivos</option>
+                                <option value="BIFOCAL" {% if pedido.tipo_lente == 'BIFOCAL' %}selected{% endif %}>Bifocales</option>
+                                <option value="ESPECIAL" {% if pedido.tipo_lente == 'ESPECIAL' %}selected{% endif %}>Especiales</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Diseño</label>
+                            <select name="diseno_lente" class="form-control">
+                                <option value="">Seleccionar...</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Material -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-material">🔬</div>
+                    <h5>Material</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="radio-options" id="material-options">
+                        <!-- Se carga dinámicamente desde JS -->
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tratamientos -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-tratamiento">✨</div>
+                    <h5>Tratamientos</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="tratamientos-grid">
+                        <div class="tratamiento-group">
+                            <label class="form-label">Fotosensible</label>
+                            <div class="radio-options" id="fotosensible-options"></div>
+                        </div>
+                        <div class="tratamiento-group">
+                            <label class="form-label">Antirreflejo</label>
+                            <div class="radio-options" id="antirreflejo-options"></div>
+                        </div>
+                        <div class="tratamiento-group">
+                            <label class="form-label">Filtro Azul</label>
+                            <div class="radio-options" id="filtro-azul-options"></div>
+                        </div>
+                        <div class="tratamiento-group">
+                            <label class="form-label">Transitions</label>
+                            <div class="radio-options" id="transitions-options"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Receta -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-receta">👓</div>
+                    <h5>Receta</h5>
+                </div>
+                <div class="form-card-body">
+                    <!-- Error cilidro positivo -->
+                    <div class="error-bubble" id="cilindro-error" style="display: none;">
+                        <span>⚠️ Cilindro debe ser negativo</span>
+                    </div>
+                    <!-- Ojo Derecho -->
+                    <div class="receta-section">
+                        <div class="receta-title">
+                            <span class="receta-badge badge-od">OD</span>
+                            Ojo Derecho
+                            <span class="help-text" style="margin-left: auto;">Derecho</span>
+                        </div>
+                        <div class="grid-6">
+                            <div class="form-group">
+                                <label class="form-label">Esfera</label>
+                                <input type="text" name="od_esfera" class="form-control" id="od_esfera" value="{{ pedido.od_esfera|default:'' }}" placeholder="0.00" oninput="validarSigno('od_esfera')" onblur="formatearDecimal('od_esfera')">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cilindro</label>
+                                <input type="text" name="od_cilindro" class="form-control" id="od_cilindro" value="{{ pedido.od_cilindro|default:'' }}" placeholder="0.00" oninput="validarSigno('od_cilindro')" onblur="formatearDecimal('od_cilindro')">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Eje</label>
+                                <input type="text" name="od_eje" class="form-control" value="{{ pedido.od_eje|default:'' }}" placeholder="0°">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">DNP</label>
+                                <input type="text" name="od_dnp" class="form-control" value="{{ pedido.od_dnp|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Altura</label>
+                                <input type="text" name="od_altura" class="form-control" value="{{ pedido.od_altura|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adición</label>
+                                <input type="text" name="od_adicion" class="form-control" id="od_adicion" value="{{ pedido.od_adicion|default:'' }}" placeholder="0.00" oninput="validarAdicion('od_adicion')" onblur="formatearDecimal('od_adicion')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Ojo Izquierdo -->
+                    <div class="receta-section">
+                        <div class="receta-title">
+                            <span class="receta-badge badge-oi">OI</span>
+                            Ojo Izquierdo
+                            <span class="help-text" style="margin-left: auto;">Izquierdo</span>
+                        </div>
+                        <div class="grid-6">
+                            <div class="form-group">
+                                <label class="form-label">Esfera</label>
+                                <input type="text" name="oi_esfera" class="form-control" id="oi_esfera" value="{{ pedido.oi_esfera|default:'' }}" placeholder="0.00" oninput="validarSigno('oi_esfera')" onblur="formatearDecimal('oi_esfera')">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Cilindro</label>
+                                <input type="text" name="oi_cilindro" class="form-control" id="oi_cilindro" value="{{ pedido.oi_cilindro|default:'' }}" placeholder="0.00" oninput="validarSigno('oi_cilindro')" onblur="formatearDecimal('oi_cilindro')">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Eje</label>
+                                <input type="text" name="oi_eje" class="form-control" value="{{ pedido.oi_eje|default:'' }}" placeholder="0°">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">DNP</label>
+                                <input type="text" name="oi_dnp" class="form-control" value="{{ pedido.oi_dnp|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Altura</label>
+                                <input type="text" name="oi_altura" class="form-control" value="{{ pedido.oi_altura|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Adición</label>
+                                <input type="text" name="oi_adicion" class="form-control" id="oi_adicion" value="{{ pedido.oi_adicion|default:'' }}" placeholder="0.00" oninput="validarAdicion('oi_adicion')" onblur="formatearDecimal('oi_adicion')">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Extras -->
+                    <div class="receta-section">
+                        <div class="receta-title">
+                            <span class="receta-badge badge-extras">📐</span>
+                            Medidas de Montura
+                        </div>
+                        <div class="extras-grid">
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Horizontal</label>
+                                <input type="text" name="horizontal" class="form-control" value="{{ pedido.horizontal|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Vertical</label>
+                                <input type="text" name="vertical" class="form-control" value="{{ pedido.vertical|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Puente</label>
+                                <input type="text" name="puente" class="form-control" value="{{ pedido.puente|default:'' }}" placeholder="0.0">
+                            </div>
+                            <div class="form-group" style="margin:0;">
+                                <label class="form-label">Dist. Mecánica</label>
+                                <input type="text" name="distancia_mecanica" class="form-control" value="{{ pedido.distancia_mecanica|default:'' }}" placeholder="0.0">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Montura -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-montura">🕶️</div>
+                    <h5>Montura</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="grid-2">
+                        <div class="form-group">
+                            <label class="form-label">Descripción</label>
+                            <input type="text" name="montura_descripcion" class="form-control" value="{{ pedido.montura_descripcion|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Estado</label>
+                            <select name="montura_estado" class="form-control">
+                                <option value="">Seleccionar...</option>
+                                <option value="NUEVA" {% if pedido.montura_estado == 'NUEVA' %}selected{% endif %}>Nueva</option>
+                                <option value="EN_USO" {% if pedido.montura_estado == 'EN_USO' %}selected{% endif %}>En uso</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bisel -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-bisel">🔲</div>
+                    <h5>Bisel</h5>
+                </div>
+                <div class="form-card-body">
+                    <select name="tipo_bisel" class="form-control" style="max-width: 320px;">
+                        <option value="">Seleccionar...</option>
+                        <option value="SIN_BISEL" {% if pedido.tipo_bisel == 'SIN_BISEL' %}selected{% endif %}>Sin bisel</option>
+                        <option value="COMPLETO" {% if pedido.tipo_bisel == 'COMPLETO' %}selected{% endif %}>Completo</option>
+                        <option value="SEMI_AIRE" {% if pedido.tipo_bisel == 'SEMI_AIRE' %}selected{% endif %}>Semi aire</option>
+                        <option value="AIRE" {% if pedido.tipo_bisel == 'AIRE' %}selected{% endif %}>Aire</option>
+                    </select>
+                </div>
+            </div>
+            
+            <!-- Observaciones -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon icon-obs">📝</div>
+                    <h5>Observaciones</h5>
+                </div>
+                <div class="form-card-body">
+                    <textarea name="observaciones" class="form-control" rows="4" style="height: auto; resize: vertical;">{{ pedido.observaciones|default:'' }}</textarea>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <button type="submit" class="btn-submit">Guardar Pedido</button>
+        </form>
+    </div>
+</main>
+
+<script>
+// Opciones desde base de datos
+var opcionesBase = {{ opciones_js|safe }};
+
+// Validar signo y mostrar burbuja de error
+function validarSigno(campoId) {
+    var input = document.getElementById(campoId);
+    var errorBubble = document.getElementById('cilindro-error');
+    if (!input) return;
+    
+    var valor = input.value.trim().replace(/\s/g, '');
+    if (valor === '') {
+        if (errorBubble) errorBubble.style.display = 'none';
+        return;
+    }
+    
+    var tieneNegativo = valor.startsWith('-') || valor.startsWith('−');
+    var tienePositivo = valor.startsWith('+');
+    
+    // Cilindro debe ser negativo
+    if (campoId.includes('cilindro')) {
+        if (tienePositivo || (!tieneNegativo && valor !== '')) {
+            input.classList.add('input-warning');
+            if (errorBubble) {
+                errorBubble.style.display = 'block';
+            }
+        } else {
+            input.classList.remove('input-warning');
+            if (errorBubble) errorBubble.style.display = 'none';
+        }
+    }
+    
+    verificarSignosOpuestos();
+}
+
+function validarAdicion(campoId) {
+    
+    var valor = input.value.trim().replace(/\s/g, '');
+    if (valor === '') {
+        if (errorBubble) errorBubble.style.display = 'none';
+        return;
+    }
+    
+    var tieneNegativo = valor.startsWith('-') || valor.startsWith('−');
+    var tienePositivo = valor.startsWith('+');
+    
+    // Cilindro debe ser negativo
+    if (campoId.includes('cilindro')) {
+        if (tienePositivo || (!tieneNegativo && valor !== '')) {
+            input.classList.add('input-warning');
+            // Mostrar burbuja de error
+            if (errorBubble) {
+                var rect = input.getBoundingClientRect();
+                errorBubble.style.left = (rect.left + rect.width/2 - 80) + 'px';
+                errorBubble.style.top = (rect.top - 50) + 'px';
+                errorBubble.style.display = 'block';
+            }
+        } else {
+            input.classList.remove('input-warning');
+            if (errorBubble) errorBubble.style.display = 'none';
+        }
+    }
+    
+    verificarSignosOpuestos();
+}
+
+function validarAdicion(campoId) {
+    var input = document.getElementById(campoId);
+    if (!input) return;
+    
+    var valor = input.value.trim().replace(/\s/g, '');
+    if (valor === '') return;
+    
+    var tieneNegativo = valor.startsWith('-') || valor.startsWith('−');
+    
+    // Adición no debe ser negativa
+    if (tieneNegativo) {
+        input.classList.add('input-warning');
+    } else {
+        input.classList.remove('input-warning');
+    }
+}
+
+function verificarMultiplo(campoId) {
+    // Placeholder
+}
+
+function verificarSignosOpuestos() {
+    var odEsfera = document.getElementById('od_esfera');
+    var oiEsfera = document.getElementById('oi_esfera');
+    var alerta = document.getElementById('sign-mixed-alert');
+    
+    if (!odEsfera || !oiEsfera || !alerta) return;
+    
+    var odVal = odEsfera.value.trim();
+    var oiVal = oiEsfera.value.trim();
+    
+    var odPos = odVal.startsWith('+');
+    var odNeg = odVal.startsWith('-') || odVal.startsWith('−');
+    var oiPos = oiVal.startsWith('+');
+    var oiNeg = oiVal.startsWith('-') || oiVal.startsWith('−');
+    
+    var mostrarAlerta = (odPos && oiNeg) || (odNeg && oiPos);
+    
+    if (mostrarAlerta) {
+        var odRect = odEsfera.getBoundingClientRect();
+        var oiRect = oiEsfera.getBoundingClientRect();
+        var centroX = (odRect.left + oiRect.left) / 2 + (odRect.width / 2);
+        var topY = odRect.top - 70;
+        
+        alerta.style.left = (centroX - 100) + 'px';
+        alerta.style.top = topY + 'px';
+        alerta.style.display = 'block';
+    } else {
+        alerta.style.display = 'none';
+    }
+}
+
+function formatearDecimal(campoId) {
+    var input = document.getElementById(campoId);
+    if (!input) return;
+    
+    var valor = input.value.trim().replace(',', '.');
+    if (valor === '') return;
+    
+    var num = parseFloat(valor.replace(/[^0-9.-]/g, ''));
+    if (isNaN(num)) return;
+    
+    input.value = num.toFixed(2);
+    
+    if (campoId.includes('adicion')) {
+        validarAdicion(campoId);
+    } else {
+        validarSigno(campoId);
+    }
+}
+
+function cargarMaterial() {
+    var container = document.getElementById('material-options');
+    if (!container || !opcionesBase['material']) {
+        container.innerHTML = '<span class="help-text">Configure las opciones en admin</span>';
+        return;
+    }
+    
+    var materiales = opcionesBase['material'];
+    var seleccionados = '{{ pedido.material|default:"" }}';
+    
+    container.innerHTML = '';
+    materiales.forEach(function(opt) {
+        var checked = seleccionados === opt ? ' checked' : '';
+        var id = 'material_' + opt.replace(/\s+/g, '_').toLowerCase();
+        container.innerHTML += 
+            '<label class="radio-card" for="' + id + '">' +
+                '<input type="radio" name="material" id="' + id + '" value="' + opt + '"' + checked + '>' +
+                '<span class="radio-card-content">' +
+                    '<span class="radio-card-title">' + opt + '</span>' +
+                '</span>' +
+            '</label>';
+    });
+}
+
+function cargarTratamientos() {
+    var tratamientos = {
+        'fotosensible': opcionesBase['fotosensible'] || [],
+        'antirreflejo': opcionesBase['antirreflejo'] || [],
+        'filtro_azul': opcionesBase['filtro_azul'] || [],
+        'transitions': opcionesBase['transitions'] || []
+    };
+    
+    var mapeoIds = {
+        'fotosensible': 'fotosensible-options',
+        'antirreflejo': 'antirreflejo-options',
+        'filtro_azul': 'filtro-azul-options',
+        'transitions': 'transitions-options'
+    };
+    
+    Object.keys(tratamientos).forEach(function(key) {
+        var container = document.getElementById(mapeoIds[key]);
+        var opts = tratamientos[key];
+        if (!container || !opts.length) return;
+        
+        var seleccionados = '{{ pedido.tratamiento_fotosensible|default:"" }}|{{ pedido.tratamiento_antireflejo|default:"" }}|{{ pedido.tratamiento_filtro_azul|default:"" }}|{{ pedido.tratamiento_transitions|default:"" }}'.split('|');
+        var selIndex = {'fotosensible': 0, 'antirreflejo': 1, 'filtro_azul': 2, 'transitions': 3}[key];
+        var seleccionado = seleccionados[selIndex] || '';
+        
+        container.innerHTML = '';
+        opts.forEach(function(opt) {
+            var checked = seleccionado === opt ? ' checked' : '';
+            var id = key + '_' + opt.replace(/\s+/g, '_').toLowerCase();
+            var label = opt === 'Sin filtro' || opt === 'No' || opt === 'Sin AR' ? 'Ninguno' : opt;
+            container.innerHTML += 
+                '<label class="radio-card" for="' + id + '">' +
+                    '<input type="radio" name="tratamiento_' + key + '" id="' + id + '" value="' + opt + '"' + checked + '>' +
+                    '<span class="radio-card-content">' +
+                        '<span class="radio-card-title">' + label + '</span>' +
+                    '</span>' +
+                '</label>';
+        });
+    });
+}
+
+function cargarDiseno() {
+    var tipo = document.querySelector('select[name="tipo_lente"]').value;
+    var disenoSelect = document.querySelector('select[name="diseno_lente"]');
+    if (!disenoSelect) return;
+    
+    disenoSelect.innerHTML = '<option value="">Seleccionar...</option>';
+    
+    var disenoKey = 'diseno_' + tipo.toLowerCase();
+    var opts = opcionesBase[disenoKey] || [];
+    
+    opts.forEach(function(opt) {
+        var selected = '{{ pedido.diseno_lente|default:"" }}' === opt ? ' selected' : '';
+        disenoSelect.innerHTML += '<option value="' + opt + '"' + selected + '>' + opt + '</option>';
+    });
+}
+
+// Manejar dependencias entre campos
+function manejarDependencias() {
+    // Obtener valor del campo padre
+    var tipoLente = document.querySelector('select[name="tipo_lente"]').value;
+    
+    // Ocultar/mostrar campos según dependencia
+    Object.keys(opcionesBase).forEach(function(campo) {
+        if (campo.startsWith('diseno_')) {
+            var select = document.querySelector('select[name="diseno_lente"]');
+            if (select) {
+                var opts = opcionesBase[campo] || [];
+                select.innerHTML = '<option value="">Seleccionar...</option>';
+                opts.forEach(function(opt) {
+                    select.innerHTML += '<option value="' + opt + '">' + opt + '</option>';
+                });
+            }
+        }
+    });
+}
+
+// Inicializar validación de campos al cargar (para edición)
+function inicializarValidacion() {
+    var camposReceta = ['od_esfera', 'od_cilindro', 'od_adicion', 'oi_esfera', 'oi_cilindro', 'oi_adicion'];
+    camposReceta.forEach(function(campoId) {
+        var input = document.getElementById(campoId);
+        if (input && input.value.trim() !== '') {
+            if (campoId.includes('adicion')) {
+                validarAdicion(campoId);
+            } else {
+                validarSigno(campoId);
+            }
+        }
+    });
+}
+
+// Inicializar
+document.addEventListener('DOMContentLoaded', function() {
+    cargarMaterial();
+    cargarTratamientos();
+    cargarDiseno();
+    manejarDependencias();
+    inicializarValidacion();
+});
+</script>
+{% endblock %}

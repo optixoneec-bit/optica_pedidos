@@ -1,0 +1,143 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario{% endblock %}
+
+{% block content %}
+<div class="page-header">
+    <h1 class="page-title">{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario</h1>
+</div>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="POST">
+                    {% csrf_token %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Usuario *</label>
+                                <input type="text" name="username" class="form-control" required
+                                       value="{{ form.username.value|default:usuario.username|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Email *</label>
+                                <input type="email" name="email" class="form-control" required
+                                       value="{{ form.email.value|default:usuario.email|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    {% if not usuario %}
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Contraseña *</label>
+                                <input type="password" name="password1" class="form-control" required>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Confirmar Contraseña *</label>
+                                <input type="password" name="password2" class="form-control" required>
+                            </div>
+                        </div>
+                    </div>
+                    {% endif %}
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Nombre</label>
+                                <input type="text" name="first_name" class="form-control"
+                                       value="{{ form.first_name.value|default:usuario.first_name|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Apellido</label>
+                                <input type="text" name="last_name" class="form-control"
+                                       value="{{ form.last_name.value|default:usuario.last_name|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Rol *</label>
+                                <select name="rol" class="form-select" required>
+                                    <option value="">Seleccionar...</option>
+                                    <option value="ADMIN" {% if form.rol.value == 'ADMIN' or usuario.rol == 'ADMIN' %}selected{% endif %}>Administrador</option>
+                                    <option value="CLIENTE" {% if form.rol.value == 'CLIENTE' or usuario.rol == 'CLIENTE' %}selected{% endif %}>Cliente</option>
+                                    <option value="SECRETARIA" {% if form.rol.value == 'SECRETARIA' or usuario.rol == 'SECRETARIA' %}selected{% endif %}>Secretaria</option>
+                                    <option value="LABORATORIO" {% if form.rol.value == 'LABORATORIO' or usuario.rol == 'LABORATORIO' %}selected{% endif %}>Laboratorio</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Teléfono</label>
+                                <input type="text" name="telefono_optica" class="form-control"
+                                       value="{{ form.telefono_optica.value|default:usuario.telefono_optica|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <hr>
+                    <h5 class="mb-3">Datos de la Óptica</h5>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Nombre de Óptica</label>
+                                <input type="text" name="nombre_optica" class="form-control"
+                                       value="{{ form.nombre_optica.value|default:usuario.nombre_optica|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Ciudad</label>
+                                <input type="text" name="ciudad_optica" class="form-control"
+                                       value="{{ form.ciudad_optica.value|default:usuario.ciudad_optica|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>RUC</label>
+                                <input type="text" name="ruc_optica" class="form-control"
+                                       value="{{ form.ruc_optica.value|default:usuario.ruc_optica|default:'' }}">
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="form-group">
+                                <label>Vendedor</label>
+                                <input type="text" name="vendedor_optica" class="form-control"
+                                       value="{{ form.vendedor_optica.value|default:usuario.vendedor_optica|default:'' }}">
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="d-flex justify-content-between">
+                        <a href="{% url 'admin_usuarios' %}" class="btn btn-secondary">
+                            <i class="bi bi-arrow-left"></i>
+                            Cancelar
+                        </a>
+                        <button type="submit" class="btn btn-primary">
+                            <i class="bi bi-check-lg"></i>
+                            {% if usuario %}Guardar Cambios{% else %}Crear Usuario{% endif %}
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

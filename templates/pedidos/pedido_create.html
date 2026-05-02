@@ -1,0 +1,272 @@
+{% extends 'base.html' %}
+
+{% block title %}Nuevo Pedido{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
+        </a>
+        {% endif %}
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="topbar">
+        <h1 class="topbar-title">Nuevo Pedido</h1>
+    </div>
+    
+    <div class="content">
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field in form %}
+                    {% for error in field.errors %}
+                    <div>{{ field.label }}: {{ error }}</div>
+                    {% endfor %}
+                {% endfor %}
+                {% for error in form.non_field_errors %}
+                <div>{{ error }}</div>
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Datos de la Óptica -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">🏪 Datos de la Óptica</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>Nombre de Óptica</label>
+                            <input type="text" name="nombre_optica" class="form-control" value="{{ datos_optica.nombre|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Ciudad</label>
+                            <input type="text" name="ciudad_optica" class="form-control" value="{{ datos_optica.ciudad|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>RUC</label>
+                            <input type="text" name="ruc_optica" class="form-control" value="{{ datos_optica.ruc|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Vendedor</label>
+                            <input type="text" name="vendedor_optica" class="form-control" value="{{ datos_optica.vendedor|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label>Teléfono</label>
+                            <input type="text" name="telefono_optica" class="form-control" value="{{ datos_optica.telefono|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Tipo de Lente -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">🔘 Tipo de Lente</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>Tipo de Lente</label>
+                            <select name="tipo_lente" class="form-control">
+                                <option value="">Seleccionar...</option>
+                                <option value="MONOFOCAL">Monofocales</option>
+                                <option value="PROGRESIVO">Progresivos</option>
+                                <option value="BIFOCAL">Bifocales</option>
+                                <option value="ESPECIAL">Especiales</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Diseño</label>
+                            <input type="text" name="diseno_lente" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Receta -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">👓 Receta</h2>
+                </div>
+                <div class="card-body">
+                    <h4 style="margin-bottom: 15px;">Ojo Derecho</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px; margin-bottom: 25px;">
+                        <div class="form-group">
+                            <label>Esfera</label>
+                            <input type="text" name="od_esfera" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Cilindro</label>
+                            <input type="text" name="od_cilindro" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Eje</label>
+                            <input type="text" name="od_eje" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>DNP</label>
+                            <input type="text" name="od_dnp" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Altura</label>
+                            <input type="text" name="od_altura" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Adición</label>
+                            <input type="text" name="od_adicion" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-bottom: 15px;">Ojo Izquierdo</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>Esfera</label>
+                            <input type="text" name="oi_esfera" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Cilindro</label>
+                            <input type="text" name="oi_cilindro" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Eje</label>
+                            <input type="text" name="oi_eje" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>DNP</label>
+                            <input type="text" name="oi_dnp" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Altura</label>
+                            <input type="text" name="oi_altura" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Adición</label>
+                            <input type="text" name="oi_adicion" class="form-control">
+                        </div>
+                    </div>
+                    
+                    <h4 style="margin-top: 25px; margin-bottom: 15px;">Extras</h4>
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>Horizontal</label>
+                            <input type="text" name="horizontal" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Vertical</label>
+                            <input type="text" name="vertical" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Puente</label>
+                            <input type="text" name="puente" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Distancia Mecánica</label>
+                            <input type="text" name="distancia_mecanica" class="form-control">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Montura -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">🕶️ Montura</h2>
+                </div>
+                <div class="card-body">
+                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 15px;">
+                        <div class="form-group">
+                            <label>Descripción</label>
+                            <input type="text" name="montura_descripcion" class="form-control">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <select name="montura_estado" class="form-control">
+                                <option value="">Seleccionar...</option>
+                                <option value="NUEVA">Nueva</option>
+                                <option value="EN_USO">En uso</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Foto de Montura</label>
+                            <input type="file" name="montura_foto" class="form-control" accept="image/*">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Bisel -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">🔲 Bisel</h2>
+                </div>
+                <div class="card-body">
+                    <div class="form-group">
+                        <select name="tipo_bisel" class="form-control" style="max-width: 300px;">
+                            <option value="">Seleccionar...</option>
+                            <option value="SIN_BISEL">Sin bisel</option>
+                            <option value="COMPLETO">Completo</option>
+                            <option value="SEMI_AIRE">Semi aire</option>
+                            <option value="AIRE">Aire</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Observaciones -->
+            <div class="card" style="margin-bottom: 20px;">
+                <div class="card-header">
+                    <h2 class="card-title">📝 Observaciones</h2>
+                </div>
+                <div class="card-body">
+                    <textarea name="observaciones" class="form-control" rows="4" placeholder="Observaciones adicionales..."></textarea>
+                </div>
+            </div>
+            
+            <!-- Submit -->
+            <button type="submit" class="btn btn-primary" style="width: 100%;">Guardar Pedido</button>
+        </form>
+    </div>
+</main>
+{% endblock %}

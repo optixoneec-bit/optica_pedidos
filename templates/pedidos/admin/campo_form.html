@@ -1,0 +1,190 @@
+{% extends 'base.html' %}
+
+{% block title %}{% if campo %}Editar{% else %}Nuevo{% endif %} Campo{% endblock %}
+
+{% block extra_css %}
+<style>
+    .form-page { max-width: 800px; margin: 0 auto; }
+    .form-card { background: white; border-radius: 12px; box-shadow: 0 1px 3px rgba(0,0,0,0.1); }
+    .form-card-header { padding: 20px 25px; border-bottom: 1px solid #e5e7eb; display: flex; align-items: center; gap: 10px; }
+    .form-card-header h2 { margin: 0; font-size: 18px; font-weight: 600; }
+    .btn-volver { display: inline-flex; align-items: center; justify-content: center; width: 36px; height: 36px; background: white; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 50%; text-decoration: none; font-size: 16px; }
+    .form-card-body { padding: 25px; }
+    .form-row { display: grid; grid-template-columns: repeat(2, 1fr); gap: 20px; margin-bottom: 20px; }
+    .form-group { margin-bottom: 20px; }
+    .form-label { display: block; margin-bottom: 8px; font-weight: 500; font-size: 14px; color: #374151; }
+    .form-control, .form-select { width: 100%; height: 45px; padding: 10px 15px; font-size: 14px; border: 2px solid #e5e7eb; border-radius: 8px; background: white; }
+    .form-control:focus, .form-select:focus { outline: none; border-color: #4f46e5; }
+    textarea.form-control { height: auto; min-height: 120px; }
+    .help-text { margin-top: 5px; font-size: 12px; color: #6b7280; }
+    .seccion-divider { margin: 30px 0; padding-top: 20px; border-top: 1px solid #e5e7eb; }
+    .seccion-titulo { font-size: 16px; font-weight: 600; color: #111827; margin-bottom: 15px; }
+    .checkbox-group { display: flex; gap: 30px; flex-wrap: wrap; }
+    .checkbox-item { display: flex; align-items: center; gap: 10px; }
+    .checkbox-item input[type="checkbox"] { width: 20px; height: 20px; accent-color: #4f46e5; }
+    .checkbox-item label { font-size: 14px; color: #374151; }
+    .form-acciones { display: flex; justify-content: space-between; align-items: center; padding: 20px 25px; border-top: 1px solid #e5e7eb; background: #f9fafb; border-radius: 0 0 12px 12px; }
+    .btn-cancelar { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: white; color: #6b7280; border: 1px solid #e5e7eb; border-radius: 8px; font-weight: 500; text-decoration: none; }
+    .btn-guardar { display: inline-flex; align-items: center; gap: 8px; padding: 12px 24px; background: #4f46e5; color: white; border: none; border-radius: 8px; font-weight: 500; cursor: pointer; }
+    .btn-guardar:hover { background: #4338ca; }
+</style>
+{% endblock %}
+
+{% block content %}
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand"><span>👁️</span> Óptica Pedidos</a>
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link"><span>📊</span> Dashboard</a>
+        <a href="{% url 'pedido_list' %}" class="menu-link"><span>📋</span> Pedidos</a>
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link"><span>👥</span> Usuarios</a>
+        <a href="{% url 'admin_campos' %}" class="menu-link active"><span>⚙️</span> Campos</a>
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link"><span>👤</span> Perfil</a>
+    </div>
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<main class="main">
+    <div class="form-page">
+        <div class="form-card">
+            <div class="form-card-header">
+                <a href="{% url 'admin_campos' %}" class="btn-volver" title="Volver">←</a>
+                <h2>{% if campo %}Editar{% else %}Nuevo{% endif %} Campo</h2>
+            </div>
+            
+            <form method="POST">
+                {% csrf_token %}
+                
+                <!-- Mostrar errores generales -->
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger mb-3">
+                    {% for error in form.non_field_errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- Mostrar errores por campo -->
+                {% for field in form %}
+                {% if field.errors %}
+                <div class="alert alert-danger mb-2">
+                    <strong>{{ field.label }}:</strong> {% for error in field.errors %}{{ error }}{% endfor %}
+                </div>
+                {% endif %}
+                {% endfor %}
+                
+                <div class="form-card-body">
+                    <!-- Información básica -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Nombre del Campo *</label>
+                            <input type="text" name="nombre" class="form-control" required value="{{ form.nombre.value|default:campo.nombre|default:'' }}" placeholder="Ej: Tipo de Lente">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Clave única *</label>
+                            <input type="text" name="clave" class="form-control" required value="{{ form.clave.value|default:campo.clave|default:'' }}" placeholder="Ej: tipo_lente">
+                            <p class="help-text">Identificador único sin espacios</p>
+                        </div>
+                    </div>
+                    
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Tipo de Campo *</label>
+                            <select name="tipo" class="form-select" required id="id_tipo">
+                                <option value="">Seleccionar...</option>
+                                <option value="texto" {% if form.tipo.value == 'texto' or campo.tipo == 'texto' %}selected{% endif %}>Texto</option>
+                                <option value="numero" {% if form.tipo.value == 'numero' or campo.tipo == 'numero' %}selected{% endif %}>Número</option>
+                                <option value="dropdown" {% if form.tipo.value == 'dropdown' or campo.tipo == 'dropdown' %}selected{% endif %}>Desplegable (dropdown)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Categoría *</label>
+                            <select name="categoria" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="LENTE" {% if form.categoria.value == 'LENTE' or campo.categoria == 'LENTE' %}selected{% endif %}>Tipo de Lente</option>
+                                <option value="CARACTERISTICAS" {% if form.categoria.value == 'CARACTERISTICAS' or campo.categoria == 'CARACTERISTICAS' %}selected{% endif %}>Características</option>
+                                <option value="MONTAJE" {% if form.categoria.value == 'MONTAJE' or campo.categoria == 'MONTAJE' %}selected{% endif %}>Montaje</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <!-- Opciones para dropdown -->
+                    <div class="form-group" id="opciones-group">
+                        <label class="form-label">Opciones (una por línea)</label>
+                        <textarea name="opciones_raw" class="form-control" rows="5" placeholder="Opción 1&#10;Opción 2&#10;Opción 3">{{ campo.opciones|join:'&#10;'|default:'' }}</textarea>
+                        <p class="help-text">Solo para campos de tipo "Desplegable". Escribe cada opción en una línea nueva.</p>
+                    </div>
+                    
+                    <!-- Configuración adicional -->
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="form-label">Orden</label>
+                            <input type="number" name="orden" class="form-control" value="{{ form.orden.value|default:campo.orden|default:0 }}">
+                            <p class="help-text">Orden de aparición en el formulario</p>
+                        </div>
+                        <div class="form-group">
+                            <div class="checkbox-group" style="margin-top: 30px;">
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="requerido" id="id_requerido" {% if form.requerido.value or campo.requerido %}checked{% endif %}>
+                                    <label for="id_requerido">Campo obligatorio</label>
+                                </div>
+                                <div class="checkbox-item">
+                                    <input type="checkbox" name="activo" id="id_activo" checked {% if campo.activo == False %}checked{% endif %}>
+                                    <label for="id_activo">Visible en formulario</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Dependencias -->
+                    <div class="seccion-divider">
+                        <h3 class="seccion-titulo">🔗 Configurar Dependencia</h3>
+                        <p style="color: #6b7280; margin-bottom: 15px; font-size: 14px;">Haz que este campo dépenda de otro. Por ejemplo: "Diseño" dépende de "Tipo de Lente".</p>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label class="form-label">Campo padre (del que dépende)</label>
+                                <select name="depende_de" class="form-select">
+                                    <option value="">Ninguno - Campo independiente</option>
+                                    {% for c in campos_disponibles %}{% if c.tipo == 'dropdown' and c.id != campo.id %}
+                                    <option value="{{ c.id }}" {% if campo.depende_de_id == c.id %}selected{% endif %}>{{ c.nombre }}</option>
+                                    {% endif %}{% endfor %}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label class="form-label">Mostrar cuando el valor sea</label>
+                                <input type="text" name="valores_temp" class="form-control" 
+                                       value="{{ form.valores_temp.value|default:'' }}"
+                                       placeholder="MONOFOCAL, PROGRESIVO">
+                                <p class="help-text">Valores del campo padre separados por coma</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="form-acciones">
+                    <a href="{% url 'admin_campos' %}" class="btn-cancelar">✕ Cancelar</a>
+                    <button type="submit" class="btn-guardar">✓ {% if campo %}Guardar Cambios{% else %}Crear Campo{% endif %}</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</main>
+
+<script>
+document.getElementById('id_tipo').addEventListener('change', function() {
+    var opcionesGroup = document.getElementById('opciones-group');
+    if (this.value === 'dropdown') {
+        opcionesGroup.style.display = 'block';
+    } else {
+        opcionesGroup.style.display = 'none';
+    }
+});
+document.getElementById('id_tipo').dispatchEvent(new Event('change'));
+</script>
+{% endblock %}

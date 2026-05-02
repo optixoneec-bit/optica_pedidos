@@ -1,0 +1,151 @@
+{% extends 'base.html' %}
+
+{% block title %}Dashboard{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
+        </a>
+        {% endif %}
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="topbar">
+        <h1 class="topbar-title">Dashboard</h1>
+        <div>
+            {% if usuario.es_admin or usuario.es_secretaria %}
+            <a href="{% url 'pedido_create' %}" class="btn btn-primary">+ Nuevo Pedido</a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="content">
+        {% if usuario.es_admin %}
+        <div class="stats-grid">
+            <div class="stat-card">
+                <div class="stat-icon primary">📋</div>
+                <div>
+                    <div class="stat-value">{{ total_pedidos }}</div>
+                    <div class="stat-label">Total Pedidos</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon warning">⏰</div>
+                <div>
+                    <div class="stat-value">{{ pedidos_pendientes }}</div>
+                    <div class="stat-label">Pendientes</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon primary">📥</div>
+                <div>
+                    <div class="stat-value">{{ pedidos_recibidos }}</div>
+                    <div class="stat-label">Recibidos</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon info">⚙️</div>
+                <div>
+                    <div class="stat-value">{{ pedidos_procesando }}</div>
+                    <div class="stat-label">Procesando</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">📤</div>
+                <div>
+                    <div class="stat-value">{{ pedidos_enviados }}</div>
+                    <div class="stat-label">Enviados</div>
+                </div>
+            </div>
+            
+            <div class="stat-card">
+                <div class="stat-icon success">✅</div>
+                <div>
+                    <div class="stat-value">{{ pedidos_entregados }}</div>
+                    <div class="stat-label">Entregados</div>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <div class="card">
+            <div class="card-header">
+                <h2 class="card-title">📋 Pedidos Recientes</h2>
+                <a href="{% url 'pedido_list' %}" class="btn btn-primary btn-sm">Ver Todos</a>
+            </div>
+            <div class="card-body">
+                {% if page_obj %}
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>N° Orden</th>
+                            <th>Óptica</th>
+                            <th>Estado</th>
+                            <th>Fecha</th>
+                            <th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for p in page_obj %}
+                        <tr>
+                            <td><strong>{{ p.numero_orden }}</strong></td>
+                            <td>{{ p.nombre_optica }}</td>
+                            <td><span class="badge badge-{{ p.estado|lower }}">{{ p.get_estado_display }}</span></td>
+                            <td>{{ p.fecha_creacion|date:"d/m/Y" }}</td>
+                            <td><a href="{% url 'pedido_detail' p.pk %}" class="btn btn-primary btn-sm">Ver</a></td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+                {% else %}
+                <div class="empty">
+                    <p>No hay pedidos para mostrar</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

@@ -1,0 +1,224 @@
+{% extends 'base.html' %}
+
+{% block title %}Pedido {{ pedido.numero_orden }}{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path and 'nuevo' not in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
+        </a>
+        {% endif %}
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="topbar">
+        <h1 class="topbar-title">Pedido #{{ pedido.numero_orden }}</h1>
+        <div style="display: flex; gap: 10px;">
+            <a href="{% url 'pedido_pdf' pedido.pk %}" class="btn btn-primary" target="_blank">📄 PDF</a>
+            {% if puede_cambiar_estado %}
+            <a href="{% url 'pedido_avanzar_estado' pedido.pk %}" class="btn btn-primary">
+                {% if pedido.estado == 'PENDIENTE' %}📥 Marcar Recibido{% endif %}
+                {% if pedido.estado == 'RECIBIDO' %}📤 Enviar a Procesar{% endif %}
+                {% if pedido.estado == 'EN_PROCESO' %}⚙️ Iniciar Procesamiento{% endif %}
+                {% if pedido.estado == 'PROCESANDO' %}✅ Marcar Procesado{% endif %}
+                {% if pedido.estado == 'PROCESADO' %}📦 Marcar Enviado{% endif %}
+                {% if pedido.estado == 'ENVIADO' %}✅ Marcar Entregado{% endif %}
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="content">
+        <!-- Estado -->
+        <div style="margin-bottom: 20px;">
+            <span class="badge badge-{{ pedido.estado|lower }}" style="font-size: 16px; padding: 10px 20px;">
+                {{ pedido.get_estado_display }}
+            </span>
+            <span style="color: #6b7280; margin-left: 15px;">
+                Creado: {{ pedido.fecha_creacion|date:"d/m/Y H:i" }}
+            </span>
+        </div>
+        
+        <!-- Código de Barras -->
+        {% if pedido.barcode %}
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">📱 Código de Barras</h2>
+            </div>
+            <div class="card-body" style="padding: 20px; text-align: center;">
+                <img src="{{ pedido.barcode.url }}" alt="Código de Barras" style="max-width: 300px;">
+                <div style="margin-top: 15px;">
+                    <strong>{{ pedido.numero_orden }}</strong>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+        
+        <!-- Datos de la Óptica -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">🏪 Datos de la Óptica</h2>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr><td style="width: 200px;"><strong>Nombre:</strong></td><td>{{ pedido.nombre_optica }}</td></tr>
+                        <tr><td><strong>Ciudad:</strong></td><td>{{ pedido.ciudad_optica }}</td></tr>
+                        <tr><td><strong>RUC:</strong></td><td>{{ pedido.ruc_optica }}</td></tr>
+                        <tr><td><strong>Vendedor:</strong></td><td>{{ pedido.vendedor_optica }}</td></tr>
+                        <tr><td><strong>Teléfono:</strong></td><td>{{ pedido.telefono_optica }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Datos del Lente -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">🔘 Datos del Lente</h2>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr><td style="width: 200px;"><strong>Tipo de Lente:</strong></td><td>{{ pedido.get_tipo_lente_display|default:"-" }}</td></tr>
+                        <tr><td><strong>Diseño:</strong></td><td>{{ pedido.diseno_lente|default:"-" }}</td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Receta -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">👓 Receta</h2>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th></th>
+                            <th>Esfera</th>
+                            <th>Cilindro</th>
+                            <th>Eje</th>
+                            <th>DNP</th>
+                            <th>Altura</th>
+                            <th>Adición</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td><strong>Ojo Derecho</strong></td>
+                            <td>{{ pedido.od_esfera|default:"-" }}</td>
+                            <td>{{ pedido.od_cilindro|default:"-" }}</td>
+                            <td>{{ pedido.od_eje|default:"-" }}</td>
+                            <td>{{ pedido.od_dnp|default:"-" }}</td>
+                            <td>{{ pedido.od_altura|default:"-" }}</td>
+                            <td>{{ pedido.od_adicion|default:"-" }}</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Ojo Izquierdo</strong></td>
+                            <td>{{ pedido.oi_esfera|default:"-" }}</td>
+                            <td>{{ pedido.oi_cilindro|default:"-" }}</td>
+                            <td>{{ pedido.oi_eje|default:"-" }}</td>
+                            <td>{{ pedido.oi_dnp|default:"-" }}</td>
+                            <td>{{ pedido.oi_altura|default:"-" }}</td>
+                            <td>{{ pedido.oi_adicion|default:"-" }}</td>
+                        </tr>
+                    </tbody>
+                </table>
+                
+                {% if pedido.horizontal or pedido.vertical or pedido.puente or pedido.distancia_mecanica %}
+                <h4 style="margin-top: 20px; margin-bottom: 10px;">Extras</h4>
+                <table class="table">
+                    <tbody>
+                        <tr><td style="width: 200px;"><strong>Horizontal:</strong></td><td>{{ pedido.horizontal|default:"-" }}</td></tr>
+                        <tr><td><strong>Vertical:</strong></td><td>{{ pedido.vertical|default:"-" }}</td></tr>
+                        <tr><td><strong>Puente:</strong></td><td>{{ pedido.puente|default:"-" }}</td></tr>
+                        <tr><td><strong>Distancia Mecánica:</strong></td><td>{{ pedido.distancia_mecanica|default:"-" }}</td></tr>
+                    </tbody>
+                </table>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Montura -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">🕶️ Montura</h2>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        <tr><td style="width: 200px;"><strong>Descripción:</strong></td><td>{{ pedido.montura_descripcion|default:"-" }}</td></tr>
+                        <tr><td><strong>Estado:</strong></td><td>{{ pedido.get_montura_estado_display|default:"-" }}</td></tr>
+                    </tbody>
+                </table>
+                {% if pedido.montura_foto %}
+                <div style="margin-top: 15px;">
+                    <img src="{{ pedido.montura_foto.url }}" alt="Montura" style="max-width: 200px; border-radius: 8px;">
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <!-- Bisel -->
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">🔲 Bisel</h2>
+            </div>
+            <div class="card-body">
+                <p>{{ pedido.get_tipo_bisel_display|default:"-" }}</p>
+            </div>
+        </div>
+        
+        <!-- Observaciones -->
+        {% if pedido.observaciones %}
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">📝 Observaciones</h2>
+            </div>
+            <div class="card-body">
+                <p>{{ pedido.observaciones }}</p>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

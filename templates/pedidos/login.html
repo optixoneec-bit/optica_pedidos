@@ -1,0 +1,33 @@
+{% extends 'base.html' %}
+
+{% block title %}Iniciar Sesión{% endblock %}
+
+{% block content %}
+<div class="auth-page">
+    <div class="auth-card">
+        <div class="auth-header">
+            <div class="auth-logo">👁️</div>
+            <h1>Óptica Pedidos</h1>
+            <p>Sistema de Gestión</p>
+        </div>
+        
+        <div class="auth-body">
+            <form method="POST">
+                {% csrf_token %}
+                
+                <div class="form-group">
+                    <label for="id_username">Usuario</label>
+                    <input type="text" name="username" id="id_username" class="form-control" placeholder="Usuario" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="id_password">Contraseña</label>
+                    <input type="password" name="password" id="id_password" class="form-control" placeholder="Contraseña" required>
+                </div>
+                
+                <button type="submit" class="btn btn-auth">Iniciar Sesión</button>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}
