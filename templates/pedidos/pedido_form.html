@@ -384,11 +384,8 @@
     .error-bubble {
         display: none;
         position: fixed;
-        top: 20px;
-        left: 50%;
-        transform: translateX(-50%);
         z-index: 1000;
-        padding: 10px 20px;
+        padding: 10px 16px;
         background: #fef2f2;
         border: 1px solid #fecaca;
         border-radius: 8px;
@@ -400,7 +397,7 @@
     .error-bubble::after {
         content: '';
         position: absolute;
-        bottom: -6px;
+        top: 100%;
         left: 50%;
         transform: translateX(-50%);
         border-width: 6px 6px 0;
@@ -753,37 +750,10 @@ function validarSigno(campoId) {
         if (tienePositivo || (!tieneNegativo && valor !== '')) {
             input.classList.add('input-warning');
             if (errorBubble) {
-                errorBubble.style.display = 'block';
-            }
-        } else {
-            input.classList.remove('input-warning');
-            if (errorBubble) errorBubble.style.display = 'none';
-        }
-    }
-    
-    verificarSignosOpuestos();
-}
-
-function validarAdicion(campoId) {
-    
-    var valor = input.value.trim().replace(/\s/g, '');
-    if (valor === '') {
-        if (errorBubble) errorBubble.style.display = 'none';
-        return;
-    }
-    
-    var tieneNegativo = valor.startsWith('-') || valor.startsWith('−');
-    var tienePositivo = valor.startsWith('+');
-    
-    // Cilindro debe ser negativo
-    if (campoId.includes('cilindro')) {
-        if (tienePositivo || (!tieneNegativo && valor !== '')) {
-            input.classList.add('input-warning');
-            // Mostrar burbuja de error
-            if (errorBubble) {
                 var rect = input.getBoundingClientRect();
                 errorBubble.style.left = (rect.left + rect.width/2 - 80) + 'px';
-                errorBubble.style.top = (rect.top - 50) + 'px';
+                errorBubble.style.top = (rect.top - 45) + 'px';
+                errorBubble.style.position = 'fixed';
                 errorBubble.style.display = 'block';
             }
         } else {
@@ -793,23 +763,6 @@ function validarAdicion(campoId) {
     }
     
     verificarSignosOpuestos();
-}
-
-function validarAdicion(campoId) {
-    var input = document.getElementById(campoId);
-    if (!input) return;
-    
-    var valor = input.value.trim().replace(/\s/g, '');
-    if (valor === '') return;
-    
-    var tieneNegativo = valor.startsWith('-') || valor.startsWith('−');
-    
-    // Adición no debe ser negativa
-    if (tieneNegativo) {
-        input.classList.add('input-warning');
-    } else {
-        input.classList.remove('input-warning');
-    }
 }
 
 function verificarMultiplo(campoId) {
