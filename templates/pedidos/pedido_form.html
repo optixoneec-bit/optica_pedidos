@@ -170,8 +170,27 @@
         color: #9ca3af;
     }
     .sign-warning {
+        display: none;
+        position: fixed;
+        z-index: 100;
+        padding: 10px 16px;
         background: #fef3c7;
-        color: #d97706;
+        border: 1px solid #fcd34d;
+        border-radius: 8px;
+        font-size: 13px;
+        font-weight: 600;
+        color: #92400e;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+    }
+    .sign-warning::after {
+        content: '';
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px 6px 0;
+        border-style: solid;
+        border-color: #fcd34d transparent transparent transparent;
     }
     
     /* Grupo de input con indicador */
@@ -566,9 +585,13 @@
                     <h5>Receta</h5>
                 </div>
                 <div class="form-card-body">
-                    <!-- Error cilidro positivo -->
+                    <!-- Error bubblede cilindro positivo -->
                     <div class="error-bubble" id="cilindro-error" style="display: none;">
                         <span>⚠️ Cilindro debe ser negativo</span>
+                    </div>
+                    <!-- Error signos opuestos esfera -->
+                    <div class="sign-warning" id="sign-mixed-alert" style="display: none;">
+                        <span>⚠️ Los signos deben ser iguales</span>
                     </div>
                     <!-- Ojo Derecho -->
                     <div class="receta-section">
