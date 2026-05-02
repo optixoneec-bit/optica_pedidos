@@ -1,143 +1,386 @@
 {% extends 'base.html' %}
-{% load static %}
 
-{% block title %}{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario{% endblock %}
+{% block title %}{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario - Admin{% endblock %}
+
+{% block extra_css %}
+<style>
+.form-page {
+    max-width: 900px;
+    margin: 0 auto;
+    padding: 20px 25px;
+}
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 20px;
+    padding-bottom: 15px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.form-title {
+    font-size: 1.5rem;
+    font-weight: 600;
+    color: #1f2937;
+    margin: 0;
+}
+.form-subtitle {
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: 4px;
+}
+.btn-volver {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: white;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-volver:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+.btn-guardar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #4f46e5;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-guardar:hover {
+    background: #4338ca;
+}
+.form-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+    overflow: hidden;
+}
+.form-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 18px 24px;
+    border-bottom: 1px solid #e5e7eb;
+}
+.form-card-header .header-icon {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+}
+.form-card-header h5 {
+    margin: 0;
+    font-size: 16px;
+    font-weight: 600;
+    color: #1f2937;
+}
+.form-card-body {
+    padding: 24px;
+}
+.form-grid {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 20px;
+}
+.form-grid-3 {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+}
+.form-group {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+.form-group-full {
+    grid-column: 1 / -1;
+}
+.form-label {
+    font-weight: 500;
+    font-size: 13px;
+    color: #4b5563;
+    text-transform: uppercase;
+}
+.form-input {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    transition: border-color 0.2s, box-shadow 0.2s;
+}
+.form-input:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+.form-select {
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-size: 14px;
+    background: white;
+    cursor: pointer;
+}
+.form-select:focus {
+    outline: none;
+    border-color: #4f46e5;
+    box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+}
+.form-checkbox {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 14px;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    cursor: pointer;
+}
+.form-checkbox input {
+    width: 18px;
+    height: 18px;
+    cursor: pointer;
+}
+.form-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 20px;
+}
+.required {
+    color: #dc2626;
+}
+.error-text {
+    font-size: 12px;
+    color: #dc2626;
+    margin-top: 4px;
+}
+@media (max-width: 600px) {
+    .form-page { padding: 15px; }
+    .form-grid, .form-grid-3 { grid-template-columns: 1fr; }
+}
+</style>
+{% endblock %}
 
 {% block content %}
-<div class="page-header">
-    <h1 class="page-title">{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario</h1>
-</div>
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path and 'nuevo' not in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
+        </a>
+        {% endif %}
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
 
-<div class="row justify-content-center">
-    <div class="col-md-8">
-        <div class="card">
-            <div class="card-body">
-                <form method="POST">
-                    {% csrf_token %}
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Usuario *</label>
-                                <input type="text" name="username" class="form-control" required
-                                       value="{{ form.username.value|default:usuario.username|default:'' }}">
-                            </div>
+<!-- Main -->
+<main class="main">
+    <div class="form-page">
+        <div class="form-header">
+            <div>
+                <h1 class="form-title">{% if usuario %}Editar{% else %}Nuevo{% endif %} Usuario</h1>
+                <p class="form-subtitle">Complete los datos del usuario</p>
+            </div>
+        </div>
+        
+        <form method="POST" action="{% if es_nuevo %}{% url 'admin_usuario_create' %}{% else %}{% url 'admin_usuario_edit' usuario.pk %}{% endif %}">
+            {% csrf_token %}
+            
+            <!-- Datos de Cuenta -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon" style="background: #dbeafe; color: #2563eb;">👤</div>
+                    <h5>Datos de Cuenta</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Usuario <span class="required">*</span></label>
+                            <input type="text" name="username" class="form-input" required
+                                   value="{{ form.username.value|default:usuario.username|default:'' }}">
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Email *</label>
-                                <input type="email" name="email" class="form-control" required
-                                       value="{{ form.email.value|default:usuario.email|default:'' }}">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Email <span class="required">*</span></label>
+                            <input type="email" name="email" class="form-input" required
+                                   value="{{ form.email.value|default:usuario.email|default:'' }}">
                         </div>
                     </div>
                     
-                    {% if not usuario %}
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Contraseña *</label>
-                                <input type="password" name="password1" class="form-control" required>
-                            </div>
+                    {% if es_nuevo %}
+                    <div class="form-grid" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Contraseña <span class="required">*</span></label>
+                            <input type="password" name="password1" class="form-input" required>
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Confirmar Contraseña *</label>
-                                <input type="password" name="password2" class="form-control" required>
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Confirmar Contraseña <span class="required">*</span></label>
+                            <input type="password" name="password2" class="form-input" required>
                         </div>
                     </div>
                     {% endif %}
                     
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Nombre</label>
-                                <input type="text" name="first_name" class="form-control"
-                                       value="{{ form.first_name.value|default:usuario.first_name|default:'' }}">
-                            </div>
+                    <div class="form-grid" style="margin-top: 20px;">
+                        <div class="form-group">
+                            <label class="form-label">Nombre</label>
+                            <input type="text" name="first_name" class="form-input"
+                                   value="{{ form.first_name.value|default:usuario.first_name|default:'' }}">
                         </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Apellido</label>
-                                <input type="text" name="last_name" class="form-control"
-                                       value="{{ form.last_name.value|default:usuario.last_name|default:'' }}">
-                            </div>
+                        <div class="form-group">
+                            <label class="form-label">Apellido</label>
+                            <input type="text" name="last_name" class="form-input"
+                                   value="{{ form.last_name.value|default:usuario.last_name|default:'' }}">
                         </div>
                     </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Rol *</label>
-                                <select name="rol" class="form-select" required>
-                                    <option value="">Seleccionar...</option>
-                                    <option value="ADMIN" {% if form.rol.value == 'ADMIN' or usuario.rol == 'ADMIN' %}selected{% endif %}>Administrador</option>
-                                    <option value="CLIENTE" {% if form.rol.value == 'CLIENTE' or usuario.rol == 'CLIENTE' %}selected{% endif %}>Cliente</option>
-                                    <option value="SECRETARIA" {% if form.rol.value == 'SECRETARIA' or usuario.rol == 'SECRETARIA' %}selected{% endif %}>Secretaria</option>
-                                    <option value="LABORATORIO" {% if form.rol.value == 'LABORATORIO' or usuario.rol == 'LABORATORIO' %}selected{% endif %}>Laboratorio</option>
-                                </select>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Teléfono</label>
-                                <input type="text" name="telefono_optica" class="form-control"
-                                       value="{{ form.telefono_optica.value|default:usuario.telefono_optica|default:'' }}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <hr>
-                    <h5 class="mb-3">Datos de la Óptica</h5>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Nombre de Óptica</label>
-                                <input type="text" name="nombre_optica" class="form-control"
-                                       value="{{ form.nombre_optica.value|default:usuario.nombre_optica|default:'' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Ciudad</label>
-                                <input type="text" name="ciudad_optica" class="form-control"
-                                       value="{{ form.ciudad_optica.value|default:usuario.ciudad_optica|default:'' }}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="row mb-3">
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>RUC</label>
-                                <input type="text" name="ruc_optica" class="form-control"
-                                       value="{{ form.ruc_optica.value|default:usuario.ruc_optica|default:'' }}">
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="form-group">
-                                <label>Vendedor</label>
-                                <input type="text" name="vendedor_optica" class="form-control"
-                                       value="{{ form.vendedor_optica.value|default:usuario.vendedor_optica|default:'' }}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <div class="d-flex justify-content-between">
-                        <a href="{% url 'admin_usuarios' %}" class="btn btn-secondary">
-                            <i class="bi bi-arrow-left"></i>
-                            Cancelar
-                        </a>
-                        <button type="submit" class="btn btn-primary">
-                            <i class="bi bi-check-lg"></i>
-                            {% if usuario %}Guardar Cambios{% else %}Crear Usuario{% endif %}
-                        </button>
-                    </div>
-                </form>
+                </div>
             </div>
-        </div>
+            
+            <!-- Datos del Rol -->
+            <div class="form-card">
+                <div class="form-card-header">
+                    <div class="header-icon" style="background: #e0e7ff; color: #7c3aed;">⚙️</div>
+                    <h5>Configuración</h5>
+                </div>
+                <div class="form-card-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Rol <span class="required">*</span></label>
+                            <select name="rol" id="id_rol" class="form-select" required>
+                                <option value="">Seleccionar...</option>
+                                <option value="ADMIN" {% if form.rol.value == 'ADMIN' or usuario.rol == 'ADMIN' %}selected{% endif %}>Administrador</option>
+                                <option value="CLIENTE" {% if form.rol.value == 'CLIENTE' or usuario.rol == 'CLIENTE' %}selected{% endif %}>Cliente</option>
+                                <option value="SECRETARIA" {% if form.rol.value == 'SECRETARIA' or usuario.rol == 'SECRETARIA' %}selected{% endif %}>Secretaria</option>
+                                <option value="LABORATORIO" {% if form.rol.value == 'LABORATORIO' or usuario.rol == 'LABORATORIO' %}selected{% endif %}>Laboratorio</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Teléfono</label>
+                            <input type="text" name="telefono_optica" class="form-input"
+                                   value="{{ form.telefono_optica.value|default:usuario.telefono_optica|default:'' }}">
+                        </div>
+                    </div>
+                    {% if usuario %}
+                    <div class="form-group" style="margin-top: 20px;">
+                        <label class="form-checkbox">
+                            <input type="checkbox" name="is_active" {% if usuario.is_active %}checked{% endif %}>
+                            <span>Usuario activo</span>
+                        </label>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <!-- Datos de la Óptica -->
+            <div class="form-card" id="optica-card">
+                <div class="form-card-header">
+                    <div class="header-icon" style="background: #fef3c7; color: #d97706;">🏪</div>
+                    <h5>Datos de la Óptica</h5>
+                </div>
+                <div class="form-card-body" id="optica-body">
+                    <div class="form-grid">
+                        <div class="form-group">
+                            <label class="form-label">Nombre de Óptica</label>
+                            <input type="text" name="nombre_optica" class="form-input"
+                                   value="{{ form.nombre_optica.value|default:usuario.nombre_optica|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Ciudad</label>
+                            <input type="text" name="ciudad_optica" class="form-input"
+                                   value="{{ form.ciudad_optica.value|default:usuario.ciudad_optica|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">RUC</label>
+                            <input type="text" name="ruc_optica" class="form-input"
+                                   value="{{ form.ruc_optica.value|default:usuario.ruc_optica|default:'' }}">
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Vendedor</label>
+                            <input type="text" name="vendedor_optica" class="form-input"
+                                   value="{{ form.vendedor_optica.value|default:usuario.vendedor_optica|default:'' }}">
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Acciones -->
+            <div class="form-actions">
+                <a href="{% url 'admin_usuarios' %}" class="btn-volver">
+                    ← Cancelar
+                </a>
+                <button type="submit" class="btn-guardar">
+                    💾 {% if es_nuevo %}Crear Usuario{% else %}Guardar Cambios{% endif %}
+                </button>
+            </div>
+        </form>
     </div>
-</div>
+</main>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const rolSelect = document.getElementById('id_rol');
+    const opticaCard = document.getElementById('optica-card');
+    const opticaBody = document.getElementById('optica-body');
+    
+    function toggleOptica() {
+        const esCliente = rolSelect && rolSelect.value === 'CLIENTE';
+        opticaCard.style.display = esCliente ? 'block' : 'none';
+    }
+    
+    if (rolSelect) {
+        rolSelect.addEventListener('change', toggleOptica);
+        toggleOptica();
+    }
+});
+</script>
 {% endblock %}

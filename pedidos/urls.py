@@ -29,6 +29,8 @@ urlpatterns = [
     path('gestion/usuarios/', views.admin_usuarios, name='admin_usuarios'),
     path('gestion/usuarios/nuevo/', views.admin_usuario_create, name='admin_usuario_create'),
     path('gestion/usuarios/<int:pk>/editar/', views.admin_usuario_edit, name='admin_usuario_edit'),
+    path('gestion/usuarios/<int:pk>/eliminar/', views.admin_usuario_delete, name='admin_usuario_delete'),
+    path('gestion/pedidos/<int:pk>/eliminar/', views.admin_pedido_delete, name='admin_pedido_delete'),
     
     path('gestion/campos/', views.admin_campos, name='admin_campos'),
     path('gestion/campos/nuevo/', views.admin_campo_create, name='admin_campo_create'),

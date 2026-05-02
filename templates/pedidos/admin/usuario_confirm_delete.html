@@ -1,0 +1,181 @@
+{% extends 'base.html' %}
+
+{% block title %}{{ titulo }}{% endblock %}
+
+{% block extra_css %}
+<style>
+.delete-page {
+    max-width: 600px;
+    margin: 0 auto;
+    padding: 20px 25px;
+}
+.delete-card {
+    background: white;
+    border-radius: 12px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    overflow: hidden;
+}
+.delete-card-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 24px;
+    border-bottom: 1px solid #e5e7eb;
+    background: #fef2f2;
+}
+.delete-card-header .icon {
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 24px;
+    background: #fee2e2;
+}
+.delete-card-header h3 {
+    margin: 0;
+    font-size: 18px;
+    font-weight: 600;
+    color: #991b1b;
+}
+.delete-card-body {
+    padding: 24px;
+}
+.delete-message {
+    font-size: 15px;
+    color: #374151;
+    margin-bottom: 20px;
+}
+.delete-warning {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 16px;
+    background: #fef3c7;
+    border-radius: 8px;
+    font-size: 14px;
+    color: #92400e;
+}
+.delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    padding-top: 20px;
+    border-top: 1px solid #e5e7eb;
+    margin-top: 20px;
+}
+.btn-cancelar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: white;
+    color: #6b7280;
+    border: 1px solid #d1d5db;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    text-decoration: none;
+    transition: all 0.2s;
+}
+.btn-cancelar:hover {
+    background: #f9fafb;
+    color: #374151;
+}
+.btn-eliminar {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 18px;
+    background: #dc2626;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-weight: 500;
+    font-size: 14px;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+.btn-eliminar:hover {
+    background: #b91c1c;
+}
+</style>
+{% endblock %}
+
+{% block content %}
+<!-- Sidebar -->
+<nav class="sidebar">
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span>Óptica Pedidos
+    </a>
+    
+    <div class="sidebar-menu">
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
+        </a>
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
+        </a>
+        
+        {% if usuario.es_admin %}
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
+        </a>
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
+        </a>
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
+        </a>
+        {% endif %}
+        
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
+        </a>
+    </div>
+    
+    <div class="sidebar-footer">
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
+        </div>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
+    </div>
+</nav>
+
+<!-- Main -->
+<main class="main">
+    <div class="delete-page">
+        <div class="delete-card">
+            <div class="delete-card-header">
+                <div class="icon">⚠️</div>
+                <h3>{{ titulo }}</h3>
+            </div>
+            <div class="delete-card-body">
+                <p class="delete-message">{{ mensaje }}</p>
+                
+                <div class="delete-warning">
+                    <span>⚠️</span>
+                    <span>Esta acción no se puede deshacer. Todos los datos asociados serán eliminados permanentemente.</span>
+                </div>
+                
+                <form method="POST">
+                    {% csrf_token %}
+                    <div class="delete-actions">
+                        <a href="{% if titulo == 'Eliminar Usuario' %}{% url 'admin_usuarios' %}{% else %}{% url 'pedido_list' %}{% endif %}" class="btn-cancelar">
+                            ← Cancelar
+                        </a>
+                        <button type="submit" class="btn-eliminar">
+                            🗑️ Eliminar
+                        </button>
+                    </div>
+                </form>
+            </div>
+        </div>
+    </div>
+</main>
+{% endblock %}

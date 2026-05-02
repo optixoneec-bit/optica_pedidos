@@ -26,7 +26,12 @@ class LoginForm(forms.Form):
 
 
 class UsuarioForm(UserCreationForm):
-    """Formulario para crear/editar usuarios."""
+    """Formulario para crear usuarios."""
+    is_active = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        required=False,
+        label='Usuario activo'
+    )
     rol = forms.ChoiceField(
         choices=Usuario._meta.get_field('rol').choices,
         widget=forms.Select(attrs={'class': 'form-select'}),
@@ -73,6 +78,74 @@ class UsuarioForm(UserCreationForm):
             'first_name': forms.TextInput(attrs={'class': 'form-control'}),
             'last_name': forms.TextInput(attrs={'class': 'form-control'}),
         }
+
+
+class UsuarioEditForm(forms.ModelForm):
+    """Formulario para editar usuarios sin cambiar contraseña."""
+    is_active = forms.BooleanField(
+        widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
+        required=False,
+        label='Usuario activo'
+    )
+    rol = forms.ChoiceField(
+        choices=Usuario._meta.get_field('rol').choices,
+        widget=forms.Select(attrs={'class': 'form-select'}),
+        label='Rol'
+    )
+    
+    nombre_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Nombre de Óptica'
+    )
+    ciudad_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Ciudad'
+    )
+    ruc_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='RUC'
+    )
+    vendedor_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Vendedor'
+    )
+    telefono_optica = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Teléfono'
+    )
+    
+    class Meta:
+        model = Usuario
+        fields = [
+            'username', 'email', 'first_name', 'last_name', 'rol',
+            'nombre_optica', 'ciudad_optica', 'ruc_optica',
+            'vendedor_optica', 'telefono_optica', 'is_active'
+        ]
+        widgets = {
+            'username': forms.TextInput(attrs={'class': 'form-control'}),
+            'email': forms.EmailInput(attrs={'class': 'form-control'}),
+            'first_name': forms.TextInput(attrs={'class': 'form-control'}),
+            'last_name': forms.TextInput(attrs={'class': 'form-control'}),
+        }
+    
+    def __init__(self, *args, **kwargs):
+        self.original_username = None
+        super().__init__(*args, **kwargs)
+        if self.instance and self.instance.pk:
+            self.original_username = self.instance.username
+    
+    def clean_username(self):
+        username = self.cleaned_data.get('username')
+        if username != self.original_username:
+            # Check if new username is taken
+            if Usuario.objects.filter(username=username).exclude(pk=self.instance.pk).exists():
+                raise forms.ValidationError('Ya existe un usuario con este nombre.')
+        return username
 
 
 class PerfilForm(forms.ModelForm):

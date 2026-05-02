@@ -14,7 +14,7 @@ from .models import (
     Usuario, Pedido, Campo, PedidoValor,
     EstadoPedido, Rol, TipoCampo, CategoriaCampo
 )
-from .forms import LoginForm, UsuarioForm, PedidoForm, CampoForm, PerfilForm, CambioEstadoForm
+from .forms import LoginForm, UsuarioForm, UsuarioEditForm, PedidoForm, CampoForm, PerfilForm, CambioEstadoForm
 from .utils import generar_barcode_pdf, crear_pdf_pedido
 import json
 
@@ -401,7 +401,13 @@ def pedido_eliminar(request, pk):
         messages.success(request, f'Pedido {numero} eliminado.')
         return redirect('pedido_list')
     
-    return render(request, 'pedidos/pedido_confirm_delete.html', {'pedido': pedido})
+    return render(request, 'pedidos/admin/usuario_confirm_delete.html', {
+        'pedido': pedido,
+        'object': pedido,
+        'usuario': request.user,
+        'titulo': 'Eliminar Pedido',
+        'mensaje': f'¿Estás seguro de eliminar el pedido "{pedido.numero_orden}"? Esta acción no se puede deshacer.'
+    })
 
 
 # Vistas para Admin
@@ -416,7 +422,7 @@ def admin_usuarios(request):
     page_number = request.GET.get('page')
     page_obj = paginator.get_page(page_number)
     
-    contexto = {'page_obj': page_obj, 'usuarios': page_obj}
+    contexto = {'page_obj': page_obj, 'usuarios': page_obj, 'usuario': request.user}
     return render(request, 'pedidos/admin/usuarios.html', contexto)
 
 
@@ -429,13 +435,22 @@ def admin_usuario_create(request):
     if request.method == 'POST':
         form = UsuarioForm(request.POST)
         if form.is_valid():
-            form.save()
-            messages.success(request, 'Usuario creado exitosamente.')
-            return redirect('admin_usuarios')
+            try:
+                user = form.save()
+                messages.success(request, f'Usuario "{user.username}" creado exitosamente.')
+                return redirect('admin_usuarios')
+            except Exception as e:
+                messages.error(request, f'Error al guardar: {str(e)}')
+        else:
+            messages.error(request, f'Formulario inválido: {form.errors}')
     else:
         form = UsuarioForm()
     
-    return render(request, 'pedidos/admin/usuario_form.html', {'form': form})
+    return render(request, 'pedidos/admin/usuario_form.html', {
+        'form': form,
+        'usuario': request.user,
+        'es_nuevo': True
+    })
 
 
 @login_required
@@ -446,16 +461,87 @@ def admin_usuario_edit(request, pk):
     
     usuario = get_object_or_404(Usuario, pk=pk)
     
+    print(f"EDICIÓN - Usuario: {usuario.username}, es_nuevo debería ser False")
+    
     if request.method == 'POST':
-        form = UsuarioForm(request.POST, instance=usuario)
+        # Remover campos de contraseña del POST para edición
+        post_data = request.POST.copy()
+        post_data.pop('password1', None)
+        post_data.pop('password2', None)
+        
+        form = UsuarioEditForm(post_data, instance=usuario)
         if form.is_valid():
             form.save()
             messages.success(request, 'Usuario actualizado.')
             return redirect('admin_usuarios')
+        else:
+            print(f"Errores: {form.errors}")
+            messages.error(request, f'Error en el formulario: {form.errors}')
     else:
-        form = UsuarioForm(instance=usuario)
+        form = UsuarioEditForm(instance=usuario)
     
-    return render(request, 'pedidos/admin/usuario_form.html', {'form': form, 'usuario': usuario})
+    return render(request, 'pedidos/admin/usuario_form.html', {
+        'form': form,
+        'usuario': usuario,
+        'es_nuevo': False
+    })
+
+
+@login_required
+def admin_usuario_delete(request, pk):
+    """Eliminar usuario (solo admin)."""
+    if not request.user.es_admin():
+        return redirect('dashboard')
+    
+    usuario = get_object_or_404(Usuario, pk=pk)
+    
+    # No permitir eliminarse a sí mismo
+    if usuario == request.user:
+        messages.error(request, 'No puedes eliminar tu propia cuenta.')
+        return redirect('admin_usuarios')
+    
+    if request.method == 'POST':
+        username = usuario.username
+        pedido_count = Pedido.objects.filter(cliente=usuario).count()
+        
+        if pedido_count > 0:
+            messages.error(request, f'No se puede eliminar. El usuario tiene {pedido_count} pedido(s) asociado(s). Primero elimine los pedidos.')
+            return redirect('admin_usuarios')
+        
+        try:
+            usuario.delete()
+            messages.success(request, f'Usuario "{username}" eliminado.')
+        except Exception as e:
+            messages.error(request, f'Error al eliminar: {str(e)}')
+        return redirect('admin_usuarios')
+    
+    return render(request, 'pedidos/admin/usuario_confirm_delete.html', {
+        'usuario': usuario,
+        'titulo': 'Eliminar Usuario',
+        'mensaje': f'¿Estás seguro de eliminar el usuario "{usuario.username}"? Esta acción no se puede deshacer.'
+    })
+
+
+@login_required
+def admin_pedido_delete(request, pk):
+    """Eliminar pedido (solo admin)."""
+    if not request.user.es_admin():
+        return redirect('dashboard')
+    
+    pedido = get_object_or_404(Pedido, pk=pk)
+    
+    if request.method == 'POST':
+        numero = pedido.numero_orden
+        pedido.delete()
+        messages.success(request, f'Pedido "{numero}" eliminado.')
+        return redirect('pedido_list')
+    
+    return render(request, 'pedidos/admin/usuario_confirm_delete.html', {
+        'object': pedido,
+        'usuario': request.user,
+        'titulo': 'Eliminar Pedido',
+        'mensaje': f'¿Estás seguro de eliminar el pedido "{pedido.numero_orden}"? Esta acción no se puede deshacer.'
+    })
 
 
 @login_required
@@ -545,6 +631,7 @@ def admin_estadisticas(request):
         'pedidos_entregados': Pedido.objects.filter(estado=EstadoPedido.ENTREGADO).count(),
         'total_clientes': Usuario.objects.filter(rol=Rol.CLIENTE).count(),
         'total_usuarios': Usuario.objects.count(),
+        'usuario': request.user,
     }
     
     return render(request, 'pedidos/admin/estadisticas.html', contexto)
@@ -556,6 +643,11 @@ def perfil(request):
     usuario = request.user
     
     if request.method == 'POST':
+        # Solo el admin puede editar
+        if not usuario.es_admin:
+            messages.error(request, 'Solo el administrador puede editar estos datos.')
+            return redirect('perfil')
+        
         form = PerfilForm(request.POST, request.FILES, instance=usuario)
         if form.is_valid():
             form.save()

@@ -4,109 +4,281 @@
 
 {% block extra_css %}
 <style>
-.page-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    margin-bottom: 25px;
-}
-
-.page-title {
-    font-size: 1.5rem;
-    font-weight: 600;
-    color: var(--dark-color);
-    margin: 0;
-}
+    .perfil-page {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 25px 30px;
+    }
+    .perfil-card {
+        background: white;
+        border-radius: 12px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        margin-bottom: 20px;
+        overflow: hidden;
+    }
+    .perfil-card-header {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        padding: 18px 24px;
+        border-bottom: 1px solid #e5e7eb;
+    }
+    .perfil-card-header .header-icon {
+        width: 40px;
+        height: 40px;
+        border-radius: 10px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-size: 20px;
+    }
+    .perfil-card-header h5 {
+        margin: 0;
+        font-size: 16px;
+        font-weight: 600;
+        color: #1f2937;
+    }
+    .perfil-card-body {
+        padding: 24px;
+    }
+    .perfil-grid {
+        display: grid;
+        grid-template-columns: repeat(2, 1fr);
+        gap: 20px;
+    }
+    .perfil-grid-3 {
+        display: grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 20px;
+    }
+    .perfil-group {
+        display: flex;
+        flex-direction: column;
+        gap: 6px;
+    }
+    .perfil-label {
+        font-weight: 500;
+        font-size: 13px;
+        color: #4b5563;
+        text-transform: uppercase;
+    }
+    .perfil-input {
+        padding: 10px 14px;
+        border: 1px solid #d1d5db;
+        border-radius: 8px;
+        font-size: 14px;
+        transition: border-color 0.2s, box-shadow 0.2s;
+    }
+    .perfil-input:focus {
+        outline: none;
+        border-color: #4f46e5;
+        box-shadow: 0 0 0 3px rgba(79, 70, 229, 0.1);
+    }
+    .perfil-input:read-only {
+        background: #f9fafb;
+        color: #6b7280;
+    }
+    .perfil-preview {
+        width: 120px;
+        height: 120px;
+        border-radius: 10px;
+        object-fit: cover;
+        border: 2px dashed #d1d5db;
+    }
+    .perfil-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 12px;
+        padding-top: 20px;
+        border-top: 1px solid #e5e7eb;
+        margin-top: 20px;
+    }
+    .btn-perfil {
+        padding: 10px 20px;
+        border-radius: 8px;
+        font-weight: 500;
+        font-size: 14px;
+        cursor: pointer;
+        transition: all 0.2s;
+    }
+    .btn-perfil-primary {
+        background: #4f46e5;
+        color: white;
+        border: none;
+    }
+    .btn-perfil-primary:hover {
+        background: #4338ca;
+    }
+    .btn-perfil-secondary {
+        background: white;
+        color: #6b7280;
+        border: 1px solid #d1d5db;
+    }
+    .btn-perfil-secondary:hover {
+        background: #f9fafb;
+    }
+    .perfil-info {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        padding: 10px 14px;
+        background: #f0fdf4;
+        border-radius: 8px;
+        font-size: 13px;
+        color: #166534;
+    }
+    @media (max-width: 600px) {
+        .perfil-page { padding: 15px; }
+        .perfil-grid, .perfil-grid-3 { grid-template-columns: 1fr; }
+    }
 </style>
 {% endblock %}
 
 {% block content %}
 <!-- Sidebar -->
 <nav class="sidebar">
-    <div class="sidebar-header">
-        <a href="{% url 'dashboard' %}" class="sidebar-brand">
-            <span>👁️</span> Óptica Pedidos
-        </a>
-    </div>
+    <a href="{% url 'dashboard' %}" class="sidebar-brand">
+        <span>👁️</span> Óptica Pedidos
+    </a>
     
     <div class="sidebar-menu">
-        <h6>Principal</h6>
-        <a href="{% url 'dashboard' %}" class="sidebar-link">
-            <i>📊</i> Dashboard
+        <div class="menu-title">Principal</div>
+        <a href="{% url 'dashboard' %}" class="menu-link {% if request.path == '/' %}active{% endif %}">
+            <span>📊</span> Dashboard
         </a>
-        <a href="{% url 'pedido_list' %}" class="sidebar-link">
-            <i>📋</i> Pedidos
+        <a href="{% url 'pedido_list' %}" class="menu-link {% if 'pedidos' in request.path %}active{% endif %}">
+            <span>📋</span> Pedidos
         </a>
         
         {% if usuario.es_admin %}
-        <h6>Administración</h6>
-        <a href="{% url 'admin_usuarios' %}" class="sidebar-link">
-            <i>👥</i> Usuarios
+        <div class="menu-title">Administración</div>
+        <a href="{% url 'admin_usuarios' %}" class="menu-link {% if 'usuarios' in request.path %}active{% endif %}">
+            <span>👥</span> Usuarios
         </a>
-        <a href="{% url 'admin_campos' %}" class="sidebar-link">
-            <i>⚙️</i> Campos
+        <a href="{% url 'admin_campos' %}" class="menu-link {% if 'campos' in request.path %}active{% endif %}">
+            <span>⚙️</span> Campos
         </a>
-        <a href="{% url 'admin_estadisticas' %}" class="sidebar-link">
-            <i>📈</i> Estadísticas
+        <a href="{% url 'admin_estadisticas' %}" class="menu-link {% if 'estadisticas' in request.path %}active{% endif %}">
+            <span>📈</span> Estadísticas
         </a>
         {% endif %}
         
-        <h6>Cuenta</h6>
-        <a href="{% url 'perfil' %}" class="sidebar-link active">
-            <i>👤</i> Perfil
+        <div class="menu-title">Cuenta</div>
+        <a href="{% url 'perfil' %}" class="menu-link {% if 'perfil' in request.path %}active{% endif %}">
+            <span>👤</span> Perfil
         </a>
     </div>
     
     <div class="sidebar-footer">
-        <div class="sidebar-user">
-            <span style="font-size: 1.5rem;">👤</span>
-            <div class="sidebar-user-info">
-                <div class="sidebar-user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
-                <div class="sidebar-user-role">{{ usuario.get_rol_display }}</div>
-            </div>
+        <div class="user-info">
+            <div class="user-name">{{ usuario.get_full_name|default:usuario.username }}</div>
+            <div class="user-role">{{ usuario.get_rol_display }}</div>
         </div>
-        <a href="{% url 'logout' %}" class="btn btn-logout">
-            <i>🚪</i> Cerrar Sesión
-        </a>
+        <a href="{% url 'logout' %}" class="btn-logout">🚪 Cerrar Sesión</a>
     </div>
 </nav>
 
 <!-- Main Content -->
-<main class="main-content">
-    <div class="top-navbar">
-        <h1>Mi Perfil</h1>
-    </div>
-    
-    <div class="content-wrapper">
-        <div class="card">
-            <div class="card-header">
-                <h5 class="card-title">👤 Datos del Usuario</h5>
-            </div>
-            <div class="card-body">
-                <form method="POST" enctype="multipart/form-data">
-                    {% csrf_token %}
-                    
-                    <div class="row">
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Nombre de Usuario</label>
-                                <input type="text" class="form-control" value="{{ usuario.username }}" readonly>
-                            </div>
-                        </div>
-                        <div class="col-md-6">
-                            <div class="mb-3">
-                                <label class="form-label">Email</label>
-                                <input type="email" class="form-control" value="{{ usuario.email|default:'' }}">
-                            </div>
-                        </div>
-                    </div>
-                    
-                    <button type="submit" class="btn btn-primary">
-                        Guardar Cambios
-                    </button>
-                </form>
+<main class="main">
+    <div class="perfil-page">
+        <div class="page-header">
+            <div>
+                <h1 class="page-title">Mi Perfil</h1>
+                <p class="page-subtitle">Gestione sus datos y configuración</p>
             </div>
         </div>
+        
+        <form method="POST" enctype="multipart/form-data">
+            {% csrf_token %}
+            
+            <!-- Datos de Cuenta -->
+            <div class="perfil-card">
+                <div class="perfil-card-header">
+                    <div class="header-icon" style="background: #dbeafe; color: #2563eb;">👤</div>
+                    <h5>Datos de Cuenta</h5>
+                </div>
+                <div class="perfil-card-body">
+                    <div class="perfil-grid">
+                        <div class="perfil-group">
+                            <label class="perfil-label">Usuario</label>
+                            <input type="text" class="perfil-input" value="{{ usuario.username }}" readonly>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Email</label>
+                            <input type="email" name="email" class="perfil-input" value="{{ usuario.email|default:'' }}" {% if not usuario.es_admin %}readonly{% endif %}>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Rol</label>
+                            <input type="text" class="perfil-input" value="{{ usuario.get_rol_display }}" readonly>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Estado</label>
+                            <input type="text" class="perfil-input" value="{% if usuario.is_active %}Activo{% else %}Inactivo{% endif %}" readonly>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <!-- Datos de la Óptica -->
+            <div class="perfil-card">
+                <div class="perfil-card-header">
+                    <div class="header-icon" style="background: #fef3c7; color: #d97706;">🏪</div>
+                    <h5>Datos de la Óptica</h5>
+                </div>
+                <div class="perfil-card-body">
+                    <div class="perfil-grid">
+                        <div class="perfil-group">
+                            <label class="perfil-label">Nombre de Óptica</label>
+                            <input type="text" name="nombre_optica" class="perfil-input" value="{{ usuario.nombre_optica|default:'' }}" placeholder="Nombre de su óptica" {% if not usuario.es_admin %}readonly{% endif %}>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Ciudad</label>
+                            <input type="text" name="ciudad_optica" class="perfil-input" value="{{ usuario.ciudad_optica|default:'' }}" placeholder="Ciudad">
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">RUC</label>
+                            <input type="text" name="ruc_optica" class="perfil-input" value="{{ usuario.ruc_optica|default:'' }}" placeholder="123456789">
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Teléfono</label>
+                            <input type="text" name="telefono_optica" class="perfil-input" value="{{ usuario.telefono_optica|default:'' }}" placeholder="+595 XXX XXX XXX" {% if not usuario.es_admin %}readonly{% endif %}>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Vendedor</label>
+                            <input type="text" name="vendedor_optica" class="perfil-input" value="{{ usuario.vendedor_optica|default:'' }}" placeholder="Nombre del vendedor" {% if not usuario.es_admin %}readonly{% endif %}>
+                        </div>
+                        <div class="perfil-group">
+                            <label class="perfil-label">Logo de Óptica</label>
+                            <input type="file" name="logo" class="perfil-input" accept="image/*" {% if not usuario.es_admin %}disabled{% endif %}>
+                            {% if usuario.logo %}
+                            <img src="{{ usuario.logo.url }}" alt="Logo" class="perfil-preview" style="margin-top: 10px;">
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if usuario.es_admin %}
+            <!-- Info -->
+            <div class="perfil-info">
+                <span>ℹ️</span>
+                <span>Estos datos se copiarán automáticamente a todos los nuevos pedidos que cree.</span>
+            </div>
+            
+            <!-- Acciones -->
+            <div class="perfil-actions">
+                <button type="submit" class="btn-perfil btn-perfil-primary">
+                    💾 Guardar Cambios
+                </button>
+            </div>
+            {% else %}
+            <!-- Info -->
+            <div class="perfil-info">
+                <span>🔒</span>
+                <span>Solo el administrador puede editar estos datos. Contacte al administrador para realizar cambios.</span>
+            </div>
+            {% endif %}
+        </form>
     </div>
 </main>
 {% endblock %}

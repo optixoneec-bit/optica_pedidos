@@ -106,6 +106,9 @@
                             <td>{{ p.fecha_creacion|date:"d/m/Y H:i" }}</td>
                             <td>
                                 <a href="{% url 'pedido_detail' p.pk %}" class="btn btn-primary btn-sm">Ver</a>
+                                {% if usuario.es_admin %}
+                                <a href="{% url 'pedido_eliminar' p.pk %}" class="btn btn-danger btn-sm" title="Eliminar">🗑️</a>
+                                {% endif %}
                             </td>
                         </tr>
                         {% endfor %}
