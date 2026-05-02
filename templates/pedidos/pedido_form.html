@@ -802,13 +802,11 @@ function verificarSignosOpuestos() {
     var odVal = odEsfera.value.trim();
     var oiVal = oiEsfera.value.trim();
     
-    // Si no tiene signo, se asume positivo
-    var odEsPositivo = odVal === '' || odVal.startsWith('+') || (!odVal.startsWith('-') && !odVal.startsWith('−'));
-    var oiEsPositivo = oiVal === '' || oiVal.startsWith('+') || (!oiVal.startsWith('-') && !oiVal.startsWith('−'));
+    // Detectar si es negativo (empieza con -)
     var odEsNegativo = odVal.startsWith('-') || odVal.startsWith('−');
     var oiEsNegativo = oiVal.startsWith('-') || oiVal.startsWith('−');
     
-    // Mostrar alerta si tienen signos diferentes (uno negativo y otro positivo o sin signo)
+    // Mostrar alerta si uno es negativo y el otro NO es negativo
     var mostrarAlerta = (odEsNegativo && !oiEsNegativo) || (oiEsNegativo && !odEsNegativo);
     
     if (mostrarAlerta) {
