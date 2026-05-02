@@ -833,7 +833,16 @@ function formatearDecimal(campoId) {
     var num = parseFloat(valor.replace(/[^0-9.-]/g, ''));
     if (isNaN(num)) return;
     
-    input.value = num.toFixed(2);
+    // Agregar + para valores positivos en esfera y adicion
+    if (campoId.includes('esfera') || campoId.includes('adicion')) {
+        if (num >= 0) {
+            input.value = '+' + num.toFixed(2);
+        } else {
+            input.value = num.toFixed(2);
+        }
+    } else {
+        input.value = num.toFixed(2);
+    }
     
     if (campoId.includes('adicion')) {
         validarAdicion(campoId);
