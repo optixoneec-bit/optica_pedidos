@@ -39,15 +39,15 @@ def crear_pdf_pedido(pedido):
         pagesize=landscape(A5),
         rightMargin=10*mm,
         leftMargin=10*mm,
-        topMargin=2*mm,
+        topMargin=8*mm,
         bottomMargin=2*mm
     )
     
     styles = getSampleStyleSheet()
-    subtitulo_style = ParagraphStyle('Subtitulo', parent=styles['Heading2'], fontSize=9, alignment=TA_LEFT, spaceAfter=0.2*mm)
-    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=8, alignment=TA_LEFT)
-    centered_style = ParagraphStyle('Centered', parent=styles['Normal'], fontSize=9, alignment=TA_CENTER)
-    pequena_style = ParagraphStyle('Pequena', parent=styles['Normal'], fontSize=7, alignment=TA_LEFT)
+    subtitulo_style = ParagraphStyle('Subtitulo', parent=styles['Heading2'], fontSize=11, alignment=TA_LEFT, spaceAfter=0, leading=11)
+    normal_style = ParagraphStyle('Normal', parent=styles['Normal'], fontSize=10, alignment=TA_LEFT)
+    centered_style = ParagraphStyle('Centered', parent=styles['Normal'], fontSize=10, alignment=TA_CENTER)
+    pequena_style = ParagraphStyle('Pequena', parent=styles['Normal'], fontSize=10, alignment=TA_LEFT)
     
     elementos = []
     
@@ -61,9 +61,9 @@ def crear_pdf_pedido(pedido):
     t_optica = Table(optica_data, colWidths=[15*mm, 55*mm, 15*mm, 55*mm])
     t_optica.setStyle(TableStyle([
         ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 7),
-        ('FONTSIZE', (1, 0), (1, -1), 7),
-        ('FONTSIZE', (3, 0), (3, -1), 7),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
+        ('FONTSIZE', (1, 0), (1, -1), 10),
+        ('FONTSIZE', (3, 0), (3, -1), 10),
         ('ALIGN', (0, 0), (0, -1), 'LEFT'),
         ('ALIGN', (2, 0), (2, -1), 'LEFT'),
     ]))
@@ -87,7 +87,7 @@ def crear_pdf_pedido(pedido):
     else:
         elementos.append(t_optica)
     
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     # ===== LENTE =====
     elementos.append(Paragraph("LENTE", subtitulo_style))
@@ -100,16 +100,16 @@ def crear_pdf_pedido(pedido):
     tabla_lente = [[tipo_lente, diseno, material]]
     t_lente = Table(tabla_lente, colWidths=[35*mm, 55*mm, 35*mm])
     t_lente.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
         ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
     ]))
     elementos.append(t_lente)
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     # ===== RECETA =====
     elementos.append(Paragraph("RECETA", subtitulo_style))
-    elementos.append(HRFlowable(width="100%", thickness=0.5, color=colors.black, spaceAfter=0.3*mm))
+    elementos.append(HRFlowable(width="100%", thickness=0.5, color=colors.black, spaceAfter=0))
     
     # Columnas: Esf, Cil, Eje, DNP, Alt, Adic | Filas: OD, OI
     tabla_receta = [
@@ -127,34 +127,44 @@ def crear_pdf_pedido(pedido):
         ('FONTNAME', (0, 1), (0, 2), 'Helvetica-Bold'),
         ('BACKGROUND', (0, 1), (0, 1), colors.lightgrey),
         ('FONTNAME', (0, 0), (-1, -1), 'Helvetica-Bold'),
-        ('FONTSIZE', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
         ('ALIGN', (1, 0), (-1, -1), 'CENTER'),
         ('GRID', (0, 0), (-1, -1), 0.3, colors.black),
         ('BOTTOMPADDING', (0, 0), (-1, -1), 1),
         ('TOPPADDING', (0, 0), (-1, -1), 1),
     ]))
     elementos.append(t_receta)
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
-    # ===== MONTURA =====
-    elementos.append(Paragraph("MONTURA", subtitulo_style))
+    # MONTURA
+    montura_text = f"Mont: {pedido.montura_descripcion[:30] or '-'} ({pedido.get_montura_estado_display() if pedido.montura_estado else 'Nueva'})"
     
-    montura_text = f"Mont: {pedido.montura_descripcion[:30] or '-'}"
-    estado_text = f"({pedido.get_montura_estado_display() if pedido.montura_estado else 'Nueva'})"
+    # MEDIDAS
+    hor = pedido.horizontal or '-'
+    vert = pedido.vertical or '-'
+    puente = pedido.puente or '-'
+    dm = pedido.distancia_mecanica or '-'
+    medidas = f"Hor: {hor} | Vert: {vert} | Puente: {puente} | DM: {dm}" if pedido.horizontal else ""
     
-    tabla_montura = [[montura_text, estado_text]]
-    t_montura = Table(tabla_montura, colWidths=[140*mm, 30*mm])
+    # MONTURA y MEDIDAS titulos en misma fila
+    titulo_montura = Paragraph("MONTURA", subtitulo_style)
+    titulo_medidas = Paragraph("MEDIDAS", subtitulo_style)
+    valor_medidas = Paragraph(medidas, pequena_style)
+    
+    tabla_montura = [[titulo_montura, titulo_medidas], 
+                   [montura_text, valor_medidas]]
+    t_montura = Table(tabla_montura, colWidths=[100*mm, 80*mm])
     t_montura.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (-1, -1), 6),
+        ('FONTSIZE', (0, 0), (-1, -1), 10),
     ]))
     elementos.append(t_montura)
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     # ===== BISEL =====
     elementos.append(Paragraph("BISEL", subtitulo_style))
     bisel_text = pedido.get_tipo_bisel_display() if pedido.tipo_bisel else '-'
     elementos.append(Paragraph(bisel_text, pequena_style))
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     # ===== TRATAMIENTOS =====
     elementos.append(Paragraph("TRATAMIENTOS", subtitulo_style))
@@ -171,24 +181,12 @@ def crear_pdf_pedido(pedido):
     
     trat_text = " | ".join(tratamientos) if tratamientos else "-"
     elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
-    elementos.append(Spacer(1, 0.2*mm))
-    
-    # ===== MEDIDAS =====
-    hor = pedido.horizontal or '-'
-    vert = pedido.vertical or '-'
-    puente = pedido.puente or '-'
-    dm = pedido.distancia_mecanica or '-'
-    
-    if pedido.horizontal or pedido.vertical or pedido.puente or pedido.distancia_mecanica:
-        elementos.append(Paragraph("MEDIDAS", subtitulo_style))
-        medidas = f"Hor: {hor} | Vert: {vert} | Puente: {puente} | DM: {dm}"
-        elementos.append(Paragraph(medidas, pequena_style))
-        elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     # ===== OBSERVACIONES =====
     elementos.append(Paragraph("OBSERVACIONES", subtitulo_style))
     elementos.append(Paragraph(pedido.observaciones[:60] if pedido.observaciones else "-", pequena_style))
-    elementos.append(Spacer(1, 0.2*mm))
+    elementos.append(Spacer(1, 0))
     
     doc.build(elementos)
     
