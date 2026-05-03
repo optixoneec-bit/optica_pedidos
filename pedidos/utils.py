@@ -69,16 +69,23 @@ def crear_pdf_pedido(pedido):
     
     elementos.append(Spacer(1, 3*mm))
     
-    # ===== DATOS OPTICA MEJORADOS =====
-    # Nombre optica + RUC | Ciudad + Telefono
-    optica_line1 = f"{pedido.nombre_optica[:22] or '-'} | RUC: {pedido.ruc_optica or '-'}"
-    optica_line2 = f"{pedido.ciudad_optica or '-'} | Telf: {pedido.telefono_optica or '-'}"
-    
-    tabla_optica = [[optica_line1], [optica_line2]]
-    t_optica = Table(tabla_optica, colWidths=[180*mm])
+    # ===== DATOS OPTICA MEJORADOS CON TITULOS =====
+    # Fila 1: Nombre optica | RUC
+    # Fila 2: Ciudad | Telefono
+    optica_data = [
+        ['Óptica:', pedido.nombre_optica[:22] or '-', 'RUC:', pedido.ruc_optica or '-'],
+        ['Ciudad:', pedido.ciudad_optica or '-', 'Telf:', pedido.telefono_optica or '-'],
+    ]
+    t_optica = Table(optica_data, colWidths=[18*mm, 70*mm, 18*mm, 70*mm])
     t_optica.setStyle(TableStyle([
+        ('FONTNAME', (0, 0), (0, -1), 'Helvetica-Bold'),
         ('FONTSIZE', (0, 0), (-1, -1), 7),
-        ('ALIGN', (0, 0), (-1, -1), 'CENTER'),
+        ('FONTSIZE', (1, 0), (1, -1), 7),
+        ('FONTSIZE', (3, 0), (3, -1), 7),
+        ('ALIGN', (0, 0), (0, -1), 'LEFT'),
+        ('ALIGN', (2, 0), (2, -1), 'LEFT'),
+        ('ALIGN', (1, 0), (1, -1), 'LEFT'),
+        ('ALIGN', (3, 0), (3, -1), 'LEFT'),
     ]))
     elementos.append(t_optica)
     elementos.append(Spacer(1, 2*mm))
