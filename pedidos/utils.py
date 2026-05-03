@@ -93,7 +93,7 @@ def crear_pdf_pedido(pedido):
     # ===== LENTE =====
     elementos.append(Paragraph("LENTE", subtitulo_style))
     
-    # ===== DATOS LENTE, DISENO, MATERIAL =====
+    # ===== DATOS LENTE =====
     tipo_lente = pedido.get_tipo_lente_display()[:15] if pedido.tipo_lente else '-'
     diseno = pedido.diseno_lente[:20] or '-'
     material = pedido.material[:15] if pedido.material else '-'
@@ -106,38 +106,6 @@ def crear_pdf_pedido(pedido):
         ('BACKGROUND', (0, 0), (-1, -1), colors.lightgrey),
     ]))
     elementos.append(t_lente)
-    elementos.append(Spacer(1, 2*mm))
-    
-    # ===== TRATAMIENTOS =====
-    elementos.append(Paragraph("TRATAMIENTOS", subtitulo_style))
-    
-    tratamientos = []
-    if pedido.tratamiento_fotosensible:
-        tratamientos.append(pedido.tratamiento_fotosensible)
-    if pedido.tratamiento_antireflejo:
-        tratamientos.append(pedido.tratamiento_antireflejo)
-    if pedido.tratamiento_filtro_azul:
-        tratamientos.append('Filtro Azul')
-    if pedido.tratamiento_transitions:
-        tratamientos.append('Transitions')
-    
-    trat_text = " | ".join(tratamientos) if tratamientos else "-"
-    elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
-    elementos.append(Spacer(1, 1*mm))
-    
-    # ===== MONTURA =====
-    elementos.append(Paragraph("MONTURA", subtitulo_style))
-    
-    montura_text = f"Mont: {pedido.montura_descripcion[:30] or '-'}"
-    bisel_text = f"Bisel: {pedido.get_tipo_bisel_display() if pedido.tipo_bisel else '-'}"
-    estado_text = f"({pedido.get_montura_estado_display() if pedido.montura_estado else 'Nueva'})"
-    
-    tabla_montura = [[montura_text, bisel_text, estado_text]]
-    t_montura = Table(tabla_montura, colWidths=[80*mm, 50*mm, 30*mm])
-    t_montura.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (-1, -1), 6),
-    ]))
-    elementos.append(t_montura)
     elementos.append(Spacer(1, 2*mm))
     
     # ===== RECETA =====
@@ -169,42 +137,64 @@ def crear_pdf_pedido(pedido):
     elementos.append(t_receta)
     elementos.append(Spacer(1, 2*mm))
     
-    # ===== MEDIDAS MEJORADAS =====
+    # ===== MONTURA =====
+    elementos.append(Paragraph("MONTURA", subtitulo_style))
+    
+    montura_text = f"Mont: {pedido.montura_descripcion[:30] or '-'}"
+    estado_text = f"({pedido.get_montura_estado_display() if pedido.montura_estado else 'Nueva'})"
+    
+    tabla_montura = [[montura_text, estado_text]]
+    t_montura = Table(tabla_montura, colWidths=[140*mm, 30*mm])
+    t_montura.setStyle(TableStyle([
+        ('FONTSIZE', (0, 0), (-1, -1), 6),
+    ]))
+    elementos.append(t_montura)
+    elementos.append(Spacer(1, 2*mm))
+    
+    # ===== BISEL =====
+    elementos.append(Paragraph("BISEL", subtitulo_style))
+    bisel_text = pedido.get_tipo_bisel_display() if pedido.tipo_bisel else '-'
+    elementos.append(Paragraph(bisel_text, pequena_style))
+    elementos.append(Spacer(1, 2*mm))
+    
+    # ===== TRATAMIENTOS =====
+    elementos.append(Paragraph("TRATAMIENTOS", subtitulo_style))
+    
+    tratamientos = []
+    if pedido.tratamiento_fotosensible:
+        tratamientos.append(pedido.tratamiento_fotosensible)
+    if pedido.tratamiento_antireflejo:
+        tratamientos.append(pedido.tratamiento_antireflejo)
+    if pedido.tratamiento_filtro_azul:
+        tratamientos.append('Filtro Azul')
+    if pedido.tratamiento_transitions:
+        tratamientos.append('Transitions')
+    
+    trat_text = " | ".join(tratamientos) if tratamientos else "-"
+    elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
+    elementos.append(Spacer(1, 1*mm))
+    
+    # ===== MEDIDAS =====
     hor = pedido.horizontal or '-'
     vert = pedido.vertical or '-'
     puente = pedido.puente or '-'
     dm = pedido.distancia_mecanica or '-'
     
     if pedido.horizontal or pedido.vertical or pedido.puente or pedido.distancia_mecanica:
+        elementos.append(Paragraph("MEDIDAS", subtitulo_style))
         medidas = f"Hor: {hor}  Vert: {vert}  Puente: {puente}  DM: {dm}"
-    else:
-        medidas = ""
+        elementos.append(Paragraph(medidas, pequena_style))
+        elementos.append(Spacer(1, 1*mm))
     
-    # Vendedor + Fecha
+    # ===== OBSERVACIONES =====
+    if pedido.observaciones:
+        elementos.append(Paragraph("OBSERVACIONES", subtitulo_style))
+        elementos.append(Paragraph(pedido.observaciones, pequena_style))
+        elementos.append(Spacer(1, 1*mm))
+    
+    # ===== VENDEDOR Y FECHA =====
     vend_text = f"V: {pedido.vendedor_optica[:12] or '-'} | F: {pedido.fecha_creacion.strftime('%d/%m/%Y')}"
-    
-    # Observaciones (sin límite de caracteres - wrap automático)
-    obs_text = f"OBS: {pedido.observaciones}" if pedido.observaciones else ""
-    
-    if medidas:
-        t_medidas = Table([[medidas]], colWidths=[180*mm])
-        t_medidas.setStyle(TableStyle([
-            ('FONTSIZE', (0, 0), (-1, -1), 6),
-            ('ALIGN', (0, 0), (-1, -1), 'LEFT'),
-        ]))
-        elementos.append(t_medidas)
-    
-    # Fila inferior: vendedor + fecha
-    t_vend = Table([[vend_text, obs_text[:50]]], colWidths=[60*mm, 120*mm])
-    t_vend.setStyle(TableStyle([
-        ('FONTSIZE', (0, 0), (0, -1), 6),
-        ('FONTSIZE', (1, 0), (-1, -1), 5),
-    ]))
-    elementos.append(t_vend)
-    
-    # Observaciones restantes si exceden 50 caracteres
-    if len(obs_text) > 50:
-        elementos.append(Paragraph(obs_text[50:], pequena_style))
+    elementos.append(Paragraph(vend_text, pequena_style))
     
     doc.build(elementos)
     
