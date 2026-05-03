@@ -37,8 +37,8 @@ def crear_pdf_pedido(pedido):
     doc = SimpleDocTemplate(
         buffer,
         pagesize=landscape(A5),
-        rightMargin=5*mm,
-        leftMargin=5*mm,
+        rightMargin=8*mm,
+        leftMargin=8*mm,
         topMargin=4*mm,
         bottomMargin=4*mm
     )
@@ -118,7 +118,7 @@ def crear_pdf_pedido(pedido):
         ['OI', str(pedido.oi_esfera or '-'), str(pedido.oi_cilindro or '-'), str(pedido.oi_eje or '-'), str(pedido.oi_dnp or '-'), str(pedido.oi_altura or '-'), str(pedido.oi_adicion or '-')],
     ]
     
-    col_receta = 14*mm
+    col_receta = 16*mm
     t_receta = Table(tabla_receta, colWidths=[col_receta]*7)
     t_receta.setStyle(TableStyle([
         ('BACKGROUND', (0, 0), (-1, 0), colors.black),
