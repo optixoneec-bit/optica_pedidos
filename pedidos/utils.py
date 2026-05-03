@@ -90,6 +90,9 @@ def crear_pdf_pedido(pedido):
     elementos.append(t_optica)
     elementos.append(Spacer(1, 2*mm))
     
+    # ===== DATOS LENTE =====
+    elementos.append(Paragraph("LENTE", subtitulo_style))
+    
     # ===== DATOS LENTE, DISENO, MATERIAL =====
     tipo_lente = pedido.get_tipo_lente_display()[:15] if pedido.tipo_lente else '-'
     diseno = pedido.diseno_lente[:20] or '-'
@@ -106,23 +109,28 @@ def crear_pdf_pedido(pedido):
     elementos.append(Spacer(1, 2*mm))
     
     # ===== TRATAMIENTOS =====
-    tratamientos = []
-    if pedido.tratamiento_fotosensible:
-        tratamientos.append(pedido.tratamiento_fotosensible)
-    if pedido.tratamiento_antireflejo:
-        tratamientos.append(pedido.tratamiento_antireflejo)
-    if pedido.tratamiento_filtro_azul:
-        tratamientos.append('Filtro Azul')
-    if pedido.tratamiento_transitions:
-        tratamientos.append('Transitions')
-    
-    if tratamientos:
-        trat_text = " | ".join(tratamientos)
-        elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
-        elementos.append(Spacer(1, 1*mm))
+    if pedido.tratamiento_fotosensible or pedido.tratamiento_antireflejo or pedido.tratamiento_filtro_azul or pedido.tratamiento_transitions:
+        elementos.append(Paragraph("TRATAMIENTOS", subtitulo_style))
+        
+        tratamientos = []
+        if pedido.tratamiento_fotosensible:
+            tratamientos.append(pedido.tratamiento_fotosensible)
+        if pedido.tratamiento_antireflejo:
+            tratamientos.append(pedido.tratamiento_antireflejo)
+        if pedido.tratamiento_filtro_azul:
+            tratamientos.append('Filtro Azul')
+        if pedido.tratamiento_transitions:
+            tratamientos.append('Transitions')
+        
+        if tratamientos:
+            trat_text = " | ".join(tratamientos)
+            elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
+            elementos.append(Spacer(1, 1*mm))
     
     # ===== MONTURA Y BISEL =====
     if pedido.montura_descripcion or pedido.tipo_bisel:
+        elementos.append(Paragraph("MONTURA", subtitulo_style))
+        
         montura_text = f"Mont: {pedido.montura_descripcion[:30] or '-'}"
         bisel_text = f"Bisel: {pedido.get_tipo_bisel_display() if pedido.tipo_bisel else '-'}"
         estado_text = f"({pedido.get_montura_estado_display() if pedido.montura_estado else 'Nueva'})"
