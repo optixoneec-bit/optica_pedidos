@@ -51,8 +51,8 @@ def crear_pdf_pedido(pedido):
     
     elementos = []
     
-    # ===== BARCODE Y DATOS OPTICA EN LA MISMA FILA =====
-    titulo_optica = Paragraph("ÓPTICA", subtitulo_style)
+    # ===== TITULO ÓPTICA =====
+    elementos.append(Paragraph("ÓPTICA", subtitulo_style))
     
     optica_data = [
         ['Óptica:', pedido.nombre_optica[:22] or '-', 'RUC:', pedido.ruc_optica or '-'],
@@ -186,14 +186,9 @@ def crear_pdf_pedido(pedido):
         elementos.append(Spacer(1, 0.5*mm))
     
     # ===== OBSERVACIONES =====
-    if pedido.observaciones:
-        elementos.append(Paragraph("OBSERVACIONES", subtitulo_style))
-        elementos.append(Paragraph(pedido.observaciones[:60], pequena_style))
-        elementos.append(Spacer(1, 0.5*mm))
-    
-    # ===== VENDEDOR Y FECHA =====
-    vend_text = f"V: {pedido.vendedor_optica[:12] or '-'} | F: {pedido.fecha_creacion.strftime('%d/%m/%Y')}"
-    elementos.append(Paragraph(vend_text, pequena_style))
+    elementos.append(Paragraph("OBSERVACIONES", subtitulo_style))
+    elementos.append(Paragraph(pedido.observaciones[:60] if pedido.observaciones else "-", pequena_style))
+    elementos.append(Spacer(1, 0.5*mm))
     
     doc.build(elementos)
     
