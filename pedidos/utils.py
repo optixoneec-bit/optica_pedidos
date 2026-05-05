@@ -171,16 +171,16 @@ def crear_pdf_pedido(pedido):
     
     tratamientos = []
     if pedido.tratamiento_fotosensible:
-        tratamientos.append(pedido.tratamiento_fotosensible)
+        tratamientos.append(f"<b>Fotosensible:</b> {pedido.tratamiento_fotosensible}")
     if pedido.tratamiento_antireflejo:
-        tratamientos.append(pedido.tratamiento_antireflejo)
+        tratamientos.append(f"<b>Antireflejo:</b> {pedido.tratamiento_antireflejo}")
     if pedido.tratamiento_filtro_azul:
-        tratamientos.append('Filtro Azul')
+        tratamientos.append("<b>Filtro Luz Azul:</b> Sí")
     if pedido.tratamiento_transitions:
-        tratamientos.append('Transitions')
+        tratamientos.append("<b>Transitions:</b> Sí")
     
     trat_text = " | ".join(tratamientos) if tratamientos else "-"
-    elementos.append(Paragraph(f"Trat: {trat_text}", pequena_style))
+    elementos.append(Paragraph(trat_text, pequena_style))
     elementos.append(Spacer(1, 0))
     
     # ===== OBSERVACIONES =====

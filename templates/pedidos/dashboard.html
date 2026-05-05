@@ -51,7 +51,7 @@
     <div class="topbar">
         <h1 class="topbar-title">Dashboard</h1>
         <div>
-            {% if usuario.es_admin or usuario.es_secretaria %}
+            {% if usuario.es_admin or usuario.es_secretaria or usuario.es_cliente %}
             <a href="{% url 'pedido_create' %}" class="btn btn-primary">+ Nuevo Pedido</a>
             {% endif %}
         </div>

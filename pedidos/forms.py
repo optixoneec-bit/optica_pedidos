@@ -296,7 +296,8 @@ class PedidoForm(forms.ModelForm):
             'oi_esfera', 'oi_cilindro', 'oi_eje', 'oi_dnp', 'oi_altura', 'oi_adicion',
             'horizontal', 'vertical', 'puente', 'distancia_mecanica',
             'montura_descripcion', 'montura_estado', 'montura_foto',
-            'tipo_bisel', 'observaciones'
+            'tipo_bisel', 'observaciones',
+            'tratamiento_fotosensible', 'tratamiento_antireflejo', 'tratamiento_filtro_azul', 'tratamiento_transitions'
         ]
 
 

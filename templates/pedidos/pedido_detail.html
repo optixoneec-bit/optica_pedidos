@@ -119,11 +119,39 @@
                     <tbody>
                         <tr><td style="width: 200px;"><strong>Tipo de Lente:</strong></td><td>{{ pedido.get_tipo_lente_display|default:"-" }}</td></tr>
                         <tr><td><strong>Diseño:</strong></td><td>{{ pedido.diseno_lente|default:"-" }}</td></tr>
+                        <tr><td><strong>Material:</strong></td><td>{{ pedido.material|default:"-" }}</td></tr>
                     </tbody>
                 </table>
             </div>
         </div>
-        
+
+        <!-- Tratamientos -->
+        {% if pedido.tratamiento_fotosensible or pedido.tratamiento_antireflejo or pedido.tratamiento_filtro_azul or pedido.tratamiento_transitions %}
+        <div class="card" style="margin-bottom: 20px;">
+            <div class="card-header">
+                <h2 class="card-title">✨ Tratamientos</h2>
+            </div>
+            <div class="card-body">
+                <table class="table">
+                    <tbody>
+                        {% if pedido.tratamiento_fotosensible %}
+                        <tr><td style="width: 200px;"><strong>Fotosensible:</strong></td><td>{{ pedido.tratamiento_fotosensible }}</td></tr>
+                        {% endif %}
+                        {% if pedido.tratamiento_antireflejo %}
+                        <tr><td style="width: 200px;"><strong>Antireflejo:</strong></td><td>{{ pedido.tratamiento_antireflejo }}</td></tr>
+                        {% endif %}
+                        {% if pedido.tratamiento_filtro_azul %}
+                        <tr><td style="width: 200px;"><strong>Filtro Luz Azul:</strong></td><td>Sí</td></tr>
+                        {% endif %}
+                        {% if pedido.tratamiento_transitions %}
+                        <tr><td style="width: 200px;"><strong>Transitions:</strong></td><td>Sí</td></tr>
+                        {% endif %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+        {% endif %}
+
         <!-- Receta -->
         <div class="card" style="margin-bottom: 20px;">
             <div class="card-header">
