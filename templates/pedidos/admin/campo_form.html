@@ -100,7 +100,8 @@
                                 <option value="">Seleccionar...</option>
                                 <option value="texto" {% if form.tipo.value == 'texto' or campo.tipo == 'texto' %}selected{% endif %}>Texto</option>
                                 <option value="numero" {% if form.tipo.value == 'numero' or campo.tipo == 'numero' %}selected{% endif %}>Número</option>
-                                <option value="dropdown" {% if form.tipo.value == 'dropdown' or campo.tipo == 'dropdown' %}selected{% endif %}>Desplegable (dropdown)</option>
+                                <option value="dropdown" {% if form.tipo.value == 'dropdown' or campo.tipo == 'dropdown' %}selected{% endif %}>Desplegable</option>
+                                <option value="tarjetas" {% if form.tipo.value == 'tarjetas' or campo.tipo == 'tarjetas' %}selected{% endif %}>Tarjetas</option>
                             </select>
                         </div>
                         <div class="form-group">

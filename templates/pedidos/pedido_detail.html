@@ -117,7 +117,7 @@
             <div class="card-body">
                 <table class="table">
                     <tbody>
-                        <tr><td style="width: 200px;"><strong>Tipo de Lente:</strong></td><td>{{ pedido.get_tipo_lente_display|default:"-" }}</td></tr>
+                        <tr><td style="width: 200px;"><strong>Tipo de Lente:</strong></td><td>{{ pedido.tipo_lente|default:"-" }}</td></tr>
                         <tr><td><strong>Diseño:</strong></td><td>{{ pedido.diseno_lente|default:"-" }}</td></tr>
                         <tr><td><strong>Material:</strong></td><td>{{ pedido.material|default:"-" }}</td></tr>
                     </tbody>

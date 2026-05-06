@@ -93,7 +93,7 @@ def crear_pdf_pedido(pedido):
     elementos.append(Paragraph("LENTE", subtitulo_style))
     
     # ===== DATOS LENTE =====
-    tipo_lente = pedido.get_tipo_lente_display()[:12] if pedido.tipo_lente else '-'
+    tipo_lente = pedido.tipo_lente[:12] if pedido.tipo_lente else '-'
     diseno = pedido.diseno_lente[:18] or '-'
     material = pedido.material[:12] if pedido.material else '-'
     

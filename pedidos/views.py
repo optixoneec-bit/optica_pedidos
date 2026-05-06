@@ -190,6 +190,11 @@ def pedido_create(request):
         if campo.opciones:
             opciones_dinamicas[campo.clave] = campo.opciones
     
+    # Crear diccionario de tipos de campo
+    tipos_campo = {}
+    for campo in list(campos_lente) + list(campos_caracteristicas) + list(campos_montaje):
+        tipos_campo[campo.clave] = campo.tipo
+    
     import json
     from types import SimpleNamespace
     
@@ -230,6 +235,7 @@ def pedido_create(request):
         'datos_optica': request.user.get_datos_optica(),
         'usuario': request.user,
         'opciones_js': opciones_js,
+        'tipos_campo': json.dumps(tipos_campo),
     }
     
     return render(request, 'pedidos/pedido_form.html', contexto)
@@ -582,8 +588,16 @@ def admin_campo_create(request):
     
     campos_disponibles = Campo.objects.filter(tipo=TipoCampo.DROPDOWN)
     
+    # Objeto campo vacío para el template
+    campo_vacio = type('Campo', (), {
+        'nombre': '', 'clave': '', 'tipo': '', 'categoria': '',
+        'requerido': False, 'orden': 0, 'activo': True, 'opciones': [],
+        'depende_de': None, 'valores_que_muestran': []
+    })()
+    
     return render(request, 'pedidos/admin/campo_form.html', {
         'form': form,
+        'campo': campo_vacio,
         'campos_disponibles': campos_disponibles,
         'usuario': request.user,
     })

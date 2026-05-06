@@ -57,6 +57,7 @@ class TipoCampo(models.TextChoices):
     TEXTO = 'texto', 'Texto'
     NUMERO = 'numero', 'Número'
     DROPDOWN = 'dropdown', 'Desplegable'
+    TARJETAS = 'tarjetas', 'Tarjetas'
 
 
 class TipoLente(models.TextChoices):

@@ -525,10 +525,10 @@
                             <label class="form-label">Tipo de Lente</label>
                             <select name="tipo_lente" class="form-control" onchange="cargarDiseno()">
                                 <option value="">Seleccionar...</option>
-                                <option value="MONOFOCAL" {% if pedido.tipo_lente == 'MONOFOCAL' %}selected{% endif %}>Monofocales</option>
-                                <option value="PROGRESIVO" {% if pedido.tipo_lente == 'PROGRESIVO' %}selected{% endif %}>Progresivos</option>
-                                <option value="BIFOCAL" {% if pedido.tipo_lente == 'BIFOCAL' %}selected{% endif %}>Bifocales</option>
-                                <option value="ESPECIAL" {% if pedido.tipo_lente == 'ESPECIAL' %}selected{% endif %}>Especiales</option>
+                                <option value="MONOFOCAL" {% if pedido.tipo_lente == 'MONOFOCAL' %}selected{% endif %}>MONOFOCAL</option>
+                                <option value="PROGRESIVO" {% if pedido.tipo_lente == 'PROGRESIVO' %}selected{% endif %}>PROGRESIVO</option>
+                                <option value="BIFOCAL" {% if pedido.tipo_lente == 'BIFOCAL' %}selected{% endif %}>BIFOCAL</option>
+                                <option value="ESPECIAL" {% if pedido.tipo_lente == 'ESPECIAL' %}selected{% endif %}>ESPECIAL</option>
                             </select>
                         </div>
                         <div class="form-group">
@@ -763,6 +763,40 @@
 <script>
 // Opciones desde base de datos
 var opcionesBase = {{ opciones_js|safe }};
+var tiposCampo = {{ tipos_campo|safe }};
+
+// Función genérica para renderizar campos según su tipo
+function renderizarCampo(clave, nombreMostrar, opciones, valorActual) {
+    var containerId = clave + '-options';
+    var container = document.getElementById(containerId);
+    if (!container) return '';
+    
+    var tipo = tiposCampo[clave] || 'tarjetas';
+    var html = '';
+    
+    if (tipo === 'texto') {
+        html = '<input type="text" name="' + clave + '" class="form-control" value="' + (valorActual || '') + '">';
+    } else if (tipo === 'numero') {
+        html = '<input type="number" name="' + clave + '" class="form-control" step="0.01" value="' + (valorActual || '') + '">';
+    } else if (tipo === 'dropdown') {
+        html = '<select name="' + clave + '" class="form-control"><option value="">Seleccionar...</option>';
+        opciones.forEach(function(opt) {
+            var selected = valorActual === opt ? ' selected' : '';
+            html += '<option value="' + opt + '"' + selected + '>' + opt + '</option>';
+        });
+        html += '</select>';
+    } else { // tarjetas (default)
+        opciones.forEach(function(opt) {
+            var checked = valorActual === opt ? ' checked' : '';
+            var id = clave + '_' + opt.replace(/\s+/g, '_').toLowerCase();
+            html += '<label class="radio-card" for="' + id + '">' +
+                '<input type="radio" name="' + clave + '" id="' + id + '" value="' + opt + '"' + checked + '>' +
+                '<span class="radio-card-content"><span class="radio-card-title">' + opt + '</span></span></label>';
+        });
+    }
+    
+    container.innerHTML = html;
+}
 
 // Validar signo y mostrar burbuja de error
 function validarSigno(campoId) {
@@ -937,27 +971,10 @@ function formatearDecimal(campoId) {
 }
 
 function cargarMaterial() {
-    var container = document.getElementById('material-options');
-    if (!container || !opcionesBase['material']) {
-        container.innerHTML = '<span class="help-text">Configure las opciones en admin</span>';
-        return;
-    }
-    
-    var materiales = opcionesBase['material'];
-    var seleccionados = '{{ pedido.material|default:"" }}';
-    
-    container.innerHTML = '';
-    materiales.forEach(function(opt) {
-        var checked = seleccionados === opt ? ' checked' : '';
-        var id = 'material_' + opt.replace(/\s+/g, '_').toLowerCase();
-        container.innerHTML += 
-            '<label class="radio-card" for="' + id + '">' +
-                '<input type="radio" name="material" id="' + id + '" value="' + opt + '"' + checked + '>' +
-                '<span class="radio-card-content">' +
-                    '<span class="radio-card-title">' + opt + '</span>' +
-                '</span>' +
-            '</label>';
-    });
+    // Usar función genérica de renderizado
+    var opciones = opcionesBase['material'] || [];
+    var valorActual = '{{ pedido.material|default:"" }}';
+    renderizarCampo('material', 'Material', opciones, valorActual);
 }
 
 function cargarTratamientos() {

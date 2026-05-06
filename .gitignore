@@ -35,3 +35,8 @@ static/
 *.egg-info/
 dist/
 build/
+
+# Videos
+videos/*.webm
+videos/*.mp4
+videos/*.mov
