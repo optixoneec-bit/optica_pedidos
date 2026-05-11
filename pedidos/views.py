@@ -154,6 +154,29 @@ def pedido_create(request):
             pedido = form.save(commit=False)
             pedido.cliente = request.user
             pedido.copiar_datos_optica()
+            
+            # Guardar material si viene en el POST
+            material = request.POST.get('material')
+            if material:
+                pedido.material = material
+                # Extraer índice del material (formato: "Nombre (1,56)")
+                import re
+                match = re.search(r'\((\d+),(\d+)\)', material)
+                if match:
+                    pedido.indice = f"{match.group(1)}.{match.group(2)}"
+            
+            # Guardar tratamientos desde POST
+            pedido.tratamiento_fotosensible = request.POST.get('tratamiento_fotosensible', '') or ''
+            pedido.tratamiento_antireflejo = request.POST.get('tratamiento_antireflejo', '') or ''
+            # BooleanField: convertir de texto a booleano
+            filtro_val = request.POST.get('tratamiento_filtro_azul', '')
+            transitions_val = request.POST.get('tratamiento_transitions', '')
+            print(f'DEBUG: tratamiento_filtro_azul = "{filtro_val}"')
+            print(f'DEBUG: tratamiento_transitions = "{transitions_val}"')
+            # BooleanField: convertir de texto a booleano (incluir labels)
+            pedido.tratamiento_filtro_azul = filtro_val in ['Con filtro', 'Si', 'True', 'on', '1', 'true', 'Filtro Azul']
+            pedido.tratamiento_transitions = transitions_val in ['Si', 'True', 'on', '1', 'true', 'Transitions']
+            
             pedido.save()
             
             # Guardar valores de campos dinámicos
@@ -189,6 +212,16 @@ def pedido_create(request):
     for campo in list(campos_lente) + list(campos_caracteristicas) + list(campos_montaje):
         if campo.opciones:
             opciones_dinamicas[campo.clave] = campo.opciones
+    
+    # Opciones por defecto para tratamientos si no hay campos
+    if 'filtro_azul' not in opciones_dinamicas:
+        opciones_dinamicas['filtro_azul'] = ['Sin filtro', 'Con filtro']
+    if 'transitions' not in opciones_dinamicas:
+        opciones_dinamicas['transitions'] = ['No', 'Si']
+    if 'fotosensible' not in opciones_dinamicas:
+        opciones_dinamicas['fotosensible'] = ['No', 'Si']
+    if 'antirreflejo' not in opciones_dinamicas:
+        opciones_dinamicas['antirreflejo'] = ['No', 'Si']
     
     # Crear diccionario de tipos de campo
     tipos_campo = {}
@@ -281,7 +314,32 @@ def pedido_update(request, pk):
     if request.method == 'POST':
         form = PedidoForm(request.POST, request.FILES, instance=pedido)
         if form.is_valid():
-            form.save()
+            pedido = form.save()
+            
+            # Guardar material si viene en el POST
+            material = request.POST.get('material')
+            if material:
+                pedido.material = material
+                # Extraer índice del material (formato: "Nombre (1,56)")
+                import re
+                match = re.search(r'\((\d+),(\d+)\)', material)
+                if match:
+                    pedido.indice = f"{match.group(1)}.{match.group(2)}"
+            
+            # Guardar tratamientos desde POST
+            pedido.tratamiento_fotosensible = request.POST.get('tratamiento_fotosensible', '') or ''
+            pedido.tratamiento_antireflejo = request.POST.get('tratamiento_antireflejo', '') or ''
+            # BooleanField: convertir de texto a booleano
+            filtro_val = request.POST.get('tratamiento_filtro_azul', '')
+            transitions_val = request.POST.get('tratamiento_transitions', '')
+            print(f'DEBUG: tratamiento_filtro_azul = "{filtro_val}"')
+            print(f'DEBUG: tratamiento_transitions = "{transitions_val}"')
+            # BooleanField: convertir de texto a booleano (incluir labels)
+            pedido.tratamiento_filtro_azul = filtro_val in ['Con filtro', 'Si', 'True', 'on', '1', 'true', 'Filtro Azul']
+            pedido.tratamiento_transitions = transitions_val in ['Si', 'True', 'on', '1', 'true', 'Transitions']
+            
+            pedido.save()
+            
             messages.success(request, f'Pedido {pedido.numero_orden} actualizado.')
             return redirect('pedido_detail', pk=pedido.pk)
     else:
@@ -375,7 +433,68 @@ def pedido_avanzar_estado(request, pk):
     pedido.estado = siguiente
     pedido.save()
     
-    messages.success(request, f'Pedido {pedido.numero_orden} cambiado a {pedido.get_estado_display()}')
+    # Si es LABORATORIO y cambió de EN_PROCESO a PROCESANDO, crear archivo LMS
+    if usuario.es_laboratorio() and pedido.estado == EstadoPedido.PROCESANDO:
+        import os
+        from pathlib import Path
+        
+        archivos_dir = Path('C:/Users/Administrator/Desktop/Archivos')
+        os.makedirs(archivos_dir, exist_ok=True)
+        
+        nombre_archivo = f'{pedido.numero_orden}.LMS'
+        ruta_archivo = archivos_dir / nombre_archivo
+        
+        # Calcular valores
+        indice = pedido.indice or '1.56'
+        material = pedido.material or ''
+        
+        # MPD (promedio de DNP)
+        try:
+            od_dnp = float(pedido.od_dnp or 0)
+            oi_dnp = float(pedido.oi_dnp or 0)
+            mpd = (od_dnp + oi_dnp) / 2 if od_dnp and oi_dnp else 0
+        except:
+            mpd = 0
+        
+        # Crear contenido LMS - solo campos del pedido
+        from datetime import datetime
+        tiempo = datetime.now().strftime('%Y%m%d%H%M%S')
+        
+        contenido = f"""REQ=LMS
+JOB={pedido.numero_orden}
+CLIENT={pedido.nombre_optica}
+CLINIT=
+SPH={pedido.od_esfera or ''};{pedido.oi_esfera or ''}
+CYL={pedido.od_cilindro or ''};{pedido.oi_cilindro or ''}
+AX={pedido.od_eje or ''};{pedido.oi_eje or ''}
+ADD={pedido.od_adicion or ''};{pedido.oi_adicion or ''}
+DBL={pedido.puente or ''}
+IPD={pedido.od_dnp or ''};{pedido.oi_dnp or ''}
+MPD={mpd}
+HBOX={pedido.horizontal or ''}
+VBOX={pedido.vertical or ''}
+FRAM={pedido.montura_descripcion or ''}
+SEGHT={pedido.od_altura or ''};{pedido.oi_altura or ''}
+LIND={indice};{indice}
+PIND={indice};{indice}
+TIND=1.530;1.530
+LTYPE={pedido.tipo_lente or ''}
+LMATNAME={material}
+LNAM={pedido.diseno_lente or ''}
+FMAT={material}
+CLAGE=?
+CLFRNT=?
+CLLIFE=?
+CLLNAM=?
+TIME={tiempo}"""
+        
+        with open(ruta_archivo, 'w', encoding='utf-8') as f:
+            f.write(contenido)
+        
+        messages.success(request, f'Pedido {pedido.numero_orden} cambiado a {pedido.get_estado_display()} - Archivo LMS creado')
+    else:
+        messages.success(request, f'Pedido {pedido.numero_orden} cambiado a {pedido.get_estado_display()}')
+    
     return redirect('pedido_detail', pk=pk)
 
 
@@ -470,12 +589,7 @@ def admin_usuario_edit(request, pk):
     print(f"EDICIÓN - Usuario: {usuario.username}, es_nuevo debería ser False")
     
     if request.method == 'POST':
-        # Remover campos de contraseña del POST para edición
-        post_data = request.POST.copy()
-        post_data.pop('password1', None)
-        post_data.pop('password2', None)
-        
-        form = UsuarioEditForm(post_data, instance=usuario)
+        form = UsuarioEditForm(request.POST, instance=usuario)
         if form.is_valid():
             form.save()
             messages.success(request, 'Usuario actualizado.')

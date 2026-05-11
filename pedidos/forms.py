@@ -81,7 +81,17 @@ class UsuarioForm(UserCreationForm):
 
 
 class UsuarioEditForm(forms.ModelForm):
-    """Formulario para editar usuarios sin cambiar contraseña."""
+    """Formulario para editar usuarios."""
+    password1 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Nueva contraseña'}),
+        required=False,
+        label='Nueva contraseña'
+    )
+    password2 = forms.CharField(
+        widget=forms.PasswordInput(attrs={'class': 'form-control', 'placeholder': 'Confirmar contraseña'}),
+        required=False,
+        label='Confirmar contraseña'
+    )
     is_active = forms.BooleanField(
         widget=forms.CheckboxInput(attrs={'class': 'form-check-input'}),
         required=False,
@@ -147,6 +157,32 @@ class UsuarioEditForm(forms.ModelForm):
                 raise forms.ValidationError('Ya existe un usuario con este nombre.')
         return username
 
+    def clean(self):
+        cleaned_data = super().clean()
+        password1 = cleaned_data.get('password1')
+        password2 = cleaned_data.get('password2')
+        
+        if password1 or password2:
+            if password1 != password2:
+                raise forms.ValidationError('Las contraseñas no coinciden.')
+            if len(password1) < 6:
+                raise forms.ValidationError('La contraseña debe tener al menos 6 caracteres.')
+        
+        return cleaned_data
+
+    def save(self, commit=True):
+        # Obtener la contraseña nueva si existe
+        password1 = self.cleaned_data.get('password1')
+        
+        # Si hay contraseña nueva, encriptarla ANTES de guardar
+        if password1 and self.instance.pk:
+            self.instance.set_password(password1)
+        
+        # Guardar el usuario con todos los datos del formulario
+        usuario = super().save(commit=commit)
+        
+        return usuario
+
 
 class PerfilForm(forms.ModelForm):
     """Formulario para editar perfil propio."""
@@ -184,6 +220,18 @@ class PedidoForm(forms.ModelForm):
         widget=forms.TextInput(attrs={'class': 'form-control'}),
         required=False,
         label='Diseño'
+    )
+    
+    # Material
+    material = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control'}),
+        required=False,
+        label='Material'
+    )
+    indice = forms.CharField(
+        widget=forms.TextInput(attrs={'class': 'form-control', 'placeholder': '1.50'}),
+        required=False,
+        label='Índice'
     )
     
     # Ojo Derecho
@@ -291,13 +339,12 @@ class PedidoForm(forms.ModelForm):
     class Meta:
         model = Pedido
         fields = [
-            'tipo_lente', 'diseno_lente',
+            'tipo_lente', 'diseno_lente', 'material', 'indice',
             'od_esfera', 'od_cilindro', 'od_eje', 'od_dnp', 'od_altura', 'od_adicion',
             'oi_esfera', 'oi_cilindro', 'oi_eje', 'oi_dnp', 'oi_altura', 'oi_adicion',
             'horizontal', 'vertical', 'puente', 'distancia_mecanica',
             'montura_descripcion', 'montura_estado', 'montura_foto',
             'tipo_bisel', 'observaciones',
-            'tratamiento_fotosensible', 'tratamiento_antireflejo', 'tratamiento_filtro_azul', 'tratamiento_transitions'
         ]
 
 

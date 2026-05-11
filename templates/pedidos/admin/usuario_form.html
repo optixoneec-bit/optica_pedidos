@@ -269,6 +269,28 @@
                             <input type="password" name="password2" class="form-input" required>
                         </div>
                     </div>
+                    {% else %}
+                    <div class="form-card" style="margin-top: 20px;">
+                        <div class="form-card-header">
+                            <div class="header-icon" style="background: #fee2e2; color: #dc2626;">🔐</div>
+                            <h5>Cambiar Contraseña</h5>
+                        </div>
+                        <div class="form-card-body">
+                            <p style="color: #6b7280; font-size: 13px; margin-bottom: 15px;">
+                                Deje en blanco si no desea cambiar la contraseña.
+                            </p>
+                            <div class="form-grid">
+                                <div class="form-group">
+                                    <label class="form-label">Nueva Contraseña</label>
+                                    <input type="password" name="password1" class="form-input" placeholder="Mínimo 6 caracteres">
+                                </div>
+                                <div class="form-group">
+                                    <label class="form-label">Confirmar Contraseña</label>
+                                    <input type="password" name="password2" class="form-input" placeholder="Repita la contraseña">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
                     {% endif %}
                     
                     <div class="form-grid" style="margin-top: 20px;">

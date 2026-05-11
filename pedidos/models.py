@@ -209,6 +209,7 @@ class Pedido(models.Model):
     
     # Material
     material = models.CharField('Material', max_length=20, blank=True)
+    indice = models.CharField('Índice', max_length=10, blank=True)
     
     # Tratamientos
     tratamiento_fotosensible = models.CharField('Fotosensible', max_length=20, blank=True)

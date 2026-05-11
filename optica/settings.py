@@ -10,7 +10,7 @@ SECRET_KEY = 'django-insecure-change-this-in-production-optica-2024'
 
 DEBUG = True
 
-ALLOWED_HOSTS = ['localhost', '127.0.0.1', '0.0.0.0']
+ALLOWED_HOSTS = ['*']
 
 INSTALLED_APPS = [
     'django.contrib.admin',
